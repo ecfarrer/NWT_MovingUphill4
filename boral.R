@@ -3,10 +3,6 @@
 
 ## NOTE: boral uses JAGS so you need to first install JAGS-3.0.0.exe or higher from http://sourceforge.net/projects/mcmc-jags/files/JAGS/
 
-library(boral) #Need version 0.7 or later, available on CRAN.
-library(Matrix)
-
-
 #Workflow: 
 #Rarefy each 16S/ITS/18SS/18SN data set (I need to because I'm dealing with differences in richness that are due to environment and I don't want read depth to affect richness, however Gloor does not rarefy data and DESeq won't work b/c it needs multiple samples within a treatment and tells you if taxa are more abundant in one vs the other treatment)
 #Merge 16S/ITS/18SS/18SN/plants/biogeo just to get everything together
@@ -87,7 +83,7 @@ comm.bio[1:10,1:60]
 
 
 
-##### Split into lo/me/hi #####
+##### Split into lo/me/hi, calculate CLR #####
 
 ## lo ##
 dim(comm.bio)
@@ -98,140 +94,236 @@ hmscYlo<-comm.bio[ind,55:24565]  #start at 54 if you want lomehi column
 rownames(hmscYlo)<-comm.bio$X.SampleID[ind]
 hmscYlo[1:10,1:10]
 
-hmscXlo<-data.frame(snowdepth=comm.bio$snowdepth,TC=comm.bio$TC,pH=comm.bio$pH,moisture=comm.bio$moisture,lomehi=comm.bio$lomehi)[ind,] #,plantcov=comm.bio$plantcov,whc=comm.bio$WHC
+hmscXlo<-data.frame(snowdepth=comm.bio$snowdepth,TC=comm.bio$TC,pH=comm.bio$pH,moisture=comm.bio$moisture)[ind,] #,lomehi=comm.bio$lomehi,plantcov=comm.bio$plantcov,whc=comm.bio$WHC
 rownames(hmscXlo)<-comm.bio$X.SampleID[ind]
 
 rcorr(as.matrix(hmscXlo[,2:(dim(hmscXlo)[2]-1)]))
 #plot(hmscX$TC,hmscX$moisture)
 
-hmscYct <- cmultRepl(hmscYc,label=0, method="CZM")
-hmscYct[1:5,1:5]
+#take out species that are zeros
+ind<-which(colSums(hmscYlo)>0);length(ind)
+hmscYlo2<-hmscYlo[ind]
+
+temp<-lapply(colnames(hmscYlo2),function(x){substr(x,1,1)})
+head(which(temp=="I"))
+tail(which(temp=="I"))
+
+#separate N, S, 16S, ITS
+hmscYlo2N<-hmscYlo2[,1:101]
+hmscYlo2S<-hmscYlo2[,102:1247]
+hmscYlo2Bac<-hmscYlo2[,1248:7101]
+hmscYlo2ITS<-hmscYlo2[,7102:8426]
+hmscYlo2Plant<-hmscYlo2[,8427:8442]
+
+#Impute zeros
+hmscYlo2N2 <- cmultRepl(hmscYlo2N,label=0, method="CZM")
+hmscYlo2S2 <- cmultRepl(hmscYlo2S,label=0, method="CZM")
+hmscYlo2Bac2 <- cmultRepl(hmscYlo2Bac,label=0, method="CZM")
+hmscYlo2ITS2 <- cmultRepl(hmscYlo2ITS,label=0, method="CZM")
+
+#Calculate clr
+hmscYlo2N3 <- t(apply(hmscYlo2N2, 1, function(x){log(x) - mean(log(x))}))
+hmscYlo2S3 <- t(apply(hmscYlo2S2, 1, function(x){log(x) - mean(log(x))}))
+hmscYlo2Bac3 <- t(apply(hmscYlo2Bac2, 1, function(x){log(x) - mean(log(x))}))
+hmscYlo2ITS3 <- t(apply(hmscYlo2ITS2, 1, function(x){log(x) - mean(log(x))}))
+
+#I could rescale plant data essentially by dividing each cell by the max abundance, so that it is preserving all properties (e.g. I dont want to turn it into relative abundance), or by dividing each plant species by its max abundance
+
+hmscYlo3<-cbind(hmscYlo2N3,hmscYlo2S3,hmscYlo2Bac3,hmscYlo2ITS3,hmscYlo2Plant)
+hmscYlo2[1:5,1:5]
+hmscYlo3[1:5,1:5]
+
+hmscYlo2S2[1:5,1:5]
+hmscYlo2S3[1:5,1:5]
+colSums(hmscYlo2S2)
+rowSums(hmscYlo2S2)
+hist(hmscYlo2S2[,25])
+hist(hmscYlo2S3[,25])
+mean(apply(hmscYlo2S3,2,min))
+
+
+## medium ##
+ind<-which(comm.bio$lomehi=="me")
+
+hmscYme<-comm.bio[ind,55:24565]  #start at 54 if you want lomehi column
+rownames(hmscYme)<-comm.bio$X.SampleID[ind]
+hmscYme[1:10,1:10]
+
+hmscXme<-data.frame(snowdepth=comm.bio$snowdepth,TC=comm.bio$TC,pH=comm.bio$pH,moisture=comm.bio$moisture)[ind,] #,lomehi=comm.bio$lomehi,plantcov=comm.bio$plantcov,whc=comm.bio$WHC
+rownames(hmscXme)<-comm.bio$X.SampleID[ind]
+
+rcorr(as.matrix(hmscXme[,2:(dim(hmscXme)[2]-1)]))
+
+#take out species that are zeros
+ind<-which(colSums(hmscYme)>0);length(ind)
+hmscYme2<-hmscYme[ind]
+
+temp<-lapply(colnames(hmscYme2),function(x){substr(x,1,1)})
+head(which(temp=="I"))
+tail(which(temp=="I"))
+
+#separate N, S, 16S, ITS
+hmscYme2N<-hmscYme2[,1:167]
+hmscYme2S<-hmscYme2[,168:1465]
+hmscYme2Bac<-hmscYme2[,1466:9375]
+hmscYme2ITS<-hmscYme2[,9376:10937]
+hmscYme2Plant<-hmscYme2[,10938:10971]
+
+#Impute zeros
+hmscYme2N2 <- cmultRepl(hmscYme2N,label=0, method="CZM")
+hmscYme2S2 <- cmultRepl(hmscYme2S,label=0, method="CZM")
+hmscYme2Bac2 <- cmultRepl(hmscYme2Bac,label=0, method="CZM")
+hmscYme2ITS2 <- cmultRepl(hmscYme2ITS,label=0, method="CZM")
+
+#Calculate clr
+hmscYme2N3 <- t(apply(hmscYme2N2, 1, function(x){log(x) - mean(log(x))}))
+hmscYme2S3 <- t(apply(hmscYme2S2, 1, function(x){log(x) - mean(log(x))}))
+hmscYme2Bac3 <- t(apply(hmscYme2Bac2, 1, function(x){log(x) - mean(log(x))}))
+hmscYme2ITS3 <- t(apply(hmscYme2ITS2, 1, function(x){log(x) - mean(log(x))}))
+
+#I could rescale plant data essentially by dividing each cell by the max abundance, so that it is preserving all properties (e.g. I dont want to turn it into relative abundance), or by dividing each plant species by its max abundance
+
+hmscYme3<-cbind(hmscYme2N3,hmscYme2S3,hmscYme2Bac3,hmscYme2ITS3,hmscYme2Plant)
+hmscYme2[1:5,1:5]
+hmscYme3[1:5,1:5]
+
+
+## high ##
+ind<-which(comm.bio$lomehi=="hi")
+
+hmscYhi<-comm.bio[ind,55:24565]  #start at 54 if you want lomehi column
+rownames(hmscYhi)<-comm.bio$X.SampleID[ind]
+hmscYhi[1:10,1:10]
+
+hmscXhi<-data.frame(snowdepth=comm.bio$snowdepth,TC=comm.bio$TC,pH=comm.bio$pH,moisture=comm.bio$moisture)[ind,] #,lomehi=comm.bio$lomehi,plantcov=comm.bio$plantcov,whc=comm.bio$WHC
+rownames(hmscXhi)<-comm.bio$X.SampleID[ind]
+
+rcorr(as.matrix(hmscXhi[,2:(dim(hmscXhi)[2]-1)]))
+
+#take out species that are zeros
+ind<-which(colSums(hmscYhi)>0);length(ind)
+hmscYhi2<-hmscYhi[ind]
+
+temp<-lapply(colnames(hmscYhi2),function(x){substr(x,1,1)})
+head(which(temp=="I"))
+tail(which(temp=="I"))
+
+#separate N, S, 16S, ITS
+hmscYhi2N<-hmscYhi2[,1:282]
+hmscYhi2S<-hmscYhi2[,283:2070]
+hmscYhi2Bac<-hmscYhi2[,2071:9952]
+hmscYhi2ITS<-hmscYhi2[,9953:11893]
+hmscYhi2Plant<-hmscYhi2[,11894:11942]
+
+#Impute zeros
+hmscYhi2N2 <- cmultRepl(hmscYhi2N,label=0, method="CZM")
+hmscYhi2S2 <- cmultRepl(hmscYhi2S,label=0, method="CZM")
+hmscYhi2Bac2 <- cmultRepl(hmscYhi2Bac,label=0, method="CZM")
+hmscYhi2ITS2 <- cmultRepl(hmscYhi2ITS,label=0, method="CZM")
+
+#Calculate clr
+hmscYhi2N3 <- t(apply(hmscYhi2N2, 1, function(x){log(x) - mean(log(x))}))
+hmscYhi2S3 <- t(apply(hmscYhi2S2, 1, function(x){log(x) - mean(log(x))}))
+hmscYhi2Bac3 <- t(apply(hmscYhi2Bac2, 1, function(x){log(x) - mean(log(x))}))
+hmscYhi2ITS3 <- t(apply(hmscYhi2ITS2, 1, function(x){log(x) - mean(log(x))}))
+
+#I could rescale plant data essentially by dividing each cell by the max abundance, so that it is preserving all properties (e.g. I dont want to turn it into relative abundance), or by dividing each plant species by its max abundance
+
+hmscYhi3<-cbind(hmscYhi2N3,hmscYhi2S3,hmscYhi2Bac3,hmscYhi2ITS3,hmscYhi2Plant)
+hmscYhi2[1:5,1:5]
+hmscYhi3[1:5,1:5]
 
 
 
-##### try transforming the data with a clr #####
+##### Select common species #####
+#select species with greater than X (X+1 or more) occurrences
 
-#started with comm.bio, took each data set apart, added 1 to the 0s, calculated the clr (on everything except plants), put the data back together, then subset into lo/hi and deleted rare taxa
-colnames(hmscY)[7208:7262]
-
-hmscYN<-hmscY[,1:142]; hmscYN[hmscYN==0]<-1
-hmscYN2<-t(apply(hmscYN, 1, function(x){log(x) - mean(log(x))}))
-
-cbind(hmscYN[,1],hmscYN2[,1])
-hist(hmscYN[,9])
-hist(hmscYN2[,9])
-
-hmscYS<-hmscY[,143:1233]; hmscYS[hmscYS==0]<-1
-hmscYS2<-t(apply(hmscYS, 1, function(x){log(x) - mean(log(x))}))
-
-hmscYBac<-hmscY[,1234:6086]; hmscYBac[hmscYBac==0]<-1
-hmscYBac2<-t(apply(hmscYBac, 1, function(x){log(x) - mean(log(x))}))
-
-hmscYITS<-hmscY[,6087:7208]; hmscYITS[hmscYITS==0]<-1
-hmscYITS2<-t(apply(hmscYITS, 1, function(x){log(x) - mean(log(x))}))
-
-hmscYPlant<-hmscY[,7209:7262]
-
-hmscY2<-cbind(hmscYN2,hmscYS2,hmscYBac2,hmscYITS2,hmscYPlant)
-hmscY2[1:5,1:5]
-
-
-#######
-
-
-
-
-#select lo/me/hi
-ind<-which(hmscX$lomehi=="hi")
-hmscXb<-hmscX[ind,]
-hmscYb<-hmscY[ind,]
-hmscY2b<-hmscY2[ind,]
-
-hmscYb[1:5,1:5]
-hmscY2b[1:5,1:5]
-
-#select species with greater than X (X+1 or more) occurrences and remove lo me hi (since you can't have text in a matrix or the whole matrix becomes character)
-ind<-which(colSums(hmscYb>0)>8)
+## low ##
+ind<-which(colSums(hmscYlo2>0)>8)
+hmscYlo2sub<-hmscYlo2[,ind] #subset the raw data as well just for looking at histograms
 length(ind)
-#hmscYc<-hmscYb[,ind]
-hmscYc<-hmscY2b[,ind]
-hmscXc<-hmscXb[,1:dim(hmscXb)[2]-1]#
-dim(hmscYc)
-dim(hmscXc)
+hmscYlo4<-hmscYlo3[,ind]
+hmscXlo
+dim(hmscYlo4)
+dim(hmscXlo)
 
-hmscYc[1:5,1:5]
+## medium ##
+ind<-which(colSums(hmscYme2>0)>8)
+length(ind)
+hmscYme4<-hmscYme3[,ind]
+hmscXme
+dim(hmscYme4)
+dim(hmscXme)
 
-#the y data are not normal (the only options I have are normal, binary, poisson, overdispersed poisson), so I could do a sqrt transformation on Y (log(0) is -Inf). log(x+1) doesn't work since the proportions are so low, could do log(x*100+1) but the sqrt actually makes it more normal
-#hmscYd<-sqrt(hmscYc*100)
-#hmscYd<-hmscYc*100 #this is odd, 9 taxa have negative R2
-#hmscYd<-log(hmscYc+1)
-hist(hmscYc[,101])
-#hist(hmscYd[,12])
+## high ##
+ind<-which(colSums(hmscYhi2>0)>8)
+length(ind)
+hmscYhi4<-hmscYhi3[,ind]
+hmscXhi
+dim(hmscYhi4)
+dim(hmscXhi)
+
+min(hmscYlo4)
+min(hmscYme4)
+min(hmscYhi4)
+max(hmscYlo4[,1:519])#not including plants
+max(hmscYme4[,1:498])
+max(hmscYhi4[,1:469])
+hmscXlo
+hmscXme
+hmscXhi
+
+#The y data are not normal (I have lots of options for distributions: normal, binary, poisson, overdispersed poisson (neg bin), log normal, gamma). however, the gloor paper and some other papers on clr seem to just plug clr values into ordinations etc without any additional transformations so I will not transform them here (yet)
+hist(hmscYlo2sub[,320],breaks=20)
+hist(hmscYlo4[,320],breaks=20)
+hist(log(hmscYlo4[,320]+1),breaks=20)
+qqnorm(log(hmscYlo4[,117]+1))
+qqnorm(hmscYlo4[,117])
+plot(hmscYlo2sub[,117],hmscYlo4[,117])
 
 #check if the values are too low that some tolerance is messing up the CI estimates, yes important to scale y, instead of scaling Y I will use the sqrt transform of the percent. I will scale x, since they differ so much in range
-hmscXd<-scale(hmscXc)
-hmscXd[,1]<-1
+hmscXlo2<-scale(hmscXlo)
+hmscXme2<-scale(hmscXme)
+hmscXhi2<-scale(hmscXhi)
 
-#hmscYd2<-scale(hmscYd)
 
 ####do randomization#####
 hmscYr<-randomizeMatrix(hmscYc, null.model="independentswap",iterations=30000) #I upped to 30000 from 1000 bc it seems like things weren't getting randomized
 hmscYc<-hmscYr
 #######
 
-#make them matrices
-hmscXe<-as.matrix(hmscXd)
 
-hmscYe<-as.matrix(hmscYc)
-#hmscYe<-as.matrix(hmscYd2)
+#Make them matrices
+hmscYlo5<-as.matrix(hmscYlo4)
+hmscYme5<-as.matrix(hmscYme4)
+hmscYhi5<-as.matrix(hmscYhi4)
 
-dim(hmscYe)
-dim(hmscXe)
-
-
-## Covariates need to be stored as a matrix for boral. no need for intercept
-covX <- hmscXe[,-1]
-
-
-
-#hi and lo random dataframes
-hmscYehi<-hmscYe
-covXhi<-covX
-hmscYelo<-hmscYe
-covXlo<-covX
-hmscYehir<-hmscYe
-covXhir<-covX
-hmscYelor<-hmscYe
-covXlor<-covX
+hmscXlo3<-as.matrix(hmscXlo2)
+hmscXme3<-as.matrix(hmscXme2)
+hmscXhi3<-as.matrix(hmscXhi2)
 
 
 ##### Fit the LVM using boral and calculate residual correlation matrix#####
 
 #List of files produced:
-#fit.hilv4occ10exp4
-#fit.lolv4occ10exp4
-#fit.hilv4occ9exp4
-#fit.lolv4occ9exp4
-#fit.hilv4occ8exp4, do not have the corresponding rescor for this b/c my computer crashed
-#fit.melv4occ9exp4
-#fit.melv3occ9exp4
-#fit.melv5occ9exp4
-#fit.melv6occ9exp4
-#fit.melv2occ9exp4
-#fit.lolv4occ9exp4f - f means final model fitted with long mcmc chain, start 2:00pm, model finished 4:20pm, rescor finished 
-#fit.melv4occ9exp4f - f means final model fitted with long mcmc chain
-#fit.hilv4occ9exp4f - f means final model fitted with long mcmc chain
-#fit.lolv4occ9exp4nosite - with no site random effect, fit with long chain
-#fit.lolv4occ9exp0nosite - with no site random effct and only latent vaiables
-#fit.melv4occ9exp4nosite
-#fit.hilv4occ9exp4nosite
-
 
 #Using the default mcmc parameters, the models take about 2 hrs to fit.  mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123)
 #Using shorter chains, it takes about 12 min to fit.  mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 3, seed = 123)
 # in the tutorial they add this to the model fitting code, hypparams = c(20,20,20,20), however, now if you wanted to change this you need to put it in a prior.control statement or something. I am just using the default here
 
-#hir <- boral(y = hmscYe, X = covX, lv.control = list(num.lv = 4), family = "negative.binomial", row.eff = "random", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 3, seed = 123))
+#Using shorter chains
+#start 3:22pm, end 3:29
+mod.lo<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 3, seed = 123))#, row.eff = "random"
+mod.hi <- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 3, seed = 123))#, row.eff = "random"
+
+#Using longer chains - final models
+mod.lof<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#, row.eff = "random"
+rescor.lof <- get.residual.cor(mod.lof) 
+save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis3.Rdata")  # 
+
+mod.hif<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#, row.eff = "random"
+rescor.hif <- get.residual.cor(mod.hif) 
+save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis2.Rdata")  # 
 
 #fitting models for comparing percent covariance explained by env, take row.eff out
 #it looks lik this is what I used for my final models in the second ISME submission. the results are very different from not using the site effect. In the Hui 2016 paper he says that the row effect adjusts for differnces in site total abundance so that, so if you want relative abundance include it. Except the other thing is that he only uses it in latent-only variable models, not models with environmental variables: "Note that we have chosen to remove the row effect, as we are now using the environmental covariates directly to also explain the differences in site total abundance". I *think* my thinking before was that I've already relativized my data, so I don't want it relativized again & also that I didn't want to standardize across different groups of organisms plants/bacteria/fungi. However, I am still very suprized that the differences between the models are so huge. it probably has to do with on sampl having a higher total than another so things are going to be mor positivly correlatd, but this is real, b/c if w included all taxa, they would have those abundances and be positively correlated.
@@ -244,30 +336,20 @@ lornosite <- boral(y = hmscYelor, X = covXlor, lv.control = list(num.lv = 4), fa
 
 
 #Calculate residual correlation matrix
-#Using
-#Using shorter chains (see above comment), takes about 11 min to fit
-#This will not calculate with a cuttoff of occ6, R studio crashes on my laptop
-
-# rescor.lolv4occ9exp4nosite <- get.residual.cor(fit.lolv4occ9exp4nosite) 
-# rescor.lolv4occ9exp0nosite <- get.residual.cor(fit.lolv4occ9exp0nosite) 
-# rescor.melv4occ9exp4nosite <- get.residual.cor(fit.melv4occ9exp4nosite) 
-# rescor.hilv4occ9exp4nosite <- get.residual.cor(fit.hilv4occ9exp4nosite) 
-rescor.hirnosite <- get.residual.cor(hirnosite) 
-rescor.lornosite <- get.residual.cor(lornosite) 
-rescor.lonosite <- get.residual.cor(lonosite) #start 9:15, end 9:20
-rescor.hinosite <- get.residual.cor(hinosite) 
+#Using shorter chains (see above comment), takes about 11 min to fit, start 3:29, end 3:40
+rescor.lof <- get.residual.cor(mod.lof) 
+rescor.hi <- get.residual.cor(mod.hi)
 
 
 #Use modified function below to get 90% CI
 #res.corshiocc8.90<-get.residual.cor2(fit.lvmhiocc8)
 
-save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/MovingUphill4_Workspace_Analysis3.Rdata")  
 
 
 ##### Look at results and check convergence/fit #####
 
 #Model fit
-fit.melv2occ9exp4$ics[1]
+mod.lo$ics[1]
 fit.melv3occ9exp4$ics[1]
 fit.melv4occ9exp4$ics[1]
 fit.melv5occ9exp4$ics[1]
@@ -280,33 +362,31 @@ plot(2:6,c(fit.melv2occ9exp4$ics[i],
            fit.melv6occ9exp4$ics[i]),type = "b")
 
 
-summary(fit.hilv4occ9exp4f) # To look at estimated parameter values
-fit.lolv4occ10exp4$hpdintervals # 95% credible intervals for model parameters.
+summary(mod.lo) # To look at estimated parameter values
+mod.lo$hpdintervals # 95% credible intervals for model parameters.
 
 #check information criteria
 fit.lolv4occ10exp4$ics
 
 #Check convergence
 #Geweke diagnostic - a z test testing whether the first 10% and the last 50% are diffrent (i think those are the fractions, doesn't really matter exactly), if it is significant, then the means are different and it didn't converge
-plot(get.mcmcsamples(fit.hilv4occ9exp4)[,1])
-plot(get.mcmcsamples(fit.hilv4occ9exp4f)[,1])
-plot(get.mcmcsamples(lornosite)[,2])
-plot(get.mcmcsamples(hirnosite)[,2])
+plot(get.mcmcsamples(mod.lo)[,1])
+plot(get.mcmcsamples(mod.lo)[,2])
 
-#the order is effct of snowdepth for each of th 600 species, then effect of TC, then pH, then moisture 
-mcmchi<-get.mcmcsamples(fit.lolv4occ9exp4f)
+#the order is effect of snowdepth for each of the 600 species, then effect of TC, then pH, then moisture 
+mcmchi<-get.mcmcsamples(mod.lo)
 dim(mcmchi)
 colnames(mcmchi)[2500:3000]
 mcmchi[1:10,1:5]
 
 #TRUE means these did not converge
-gew.pvals <- 2*pnorm(abs(unlist(fit.hilv4occ9exp4f$geweke.diag[[1]])), lower.tail = FALSE)
+gew.pvals <- 2*pnorm(abs(unlist(mod.lo$geweke.diag[[1]])), lower.tail = FALSE)
 length(gew.pvals)
 gew.pvals[1:5]
 gew.pvals[which(gew.pvals<.05)] #technically these did not converge, however, the trace plots look fine to me
 p.adjust(gew.pvals, method = "holm")
 
-fit.hilv4occ9exp4f$geweke.diag
+mod.lo$geweke.diag
 lornosite$geweke.diag
 hirnosite$geweke.diag
 lonosite$geweke.diag 
@@ -351,7 +431,7 @@ cbind(fit.lolv4occ10exp4$lv.coefs.mean,fit.lolv4occ10exp4$X.coefs.mean)
 fit.hilv4occ9exp4f$X.coefs.mean
 
 ##Dunn-Smyth residual plots to check model assumption, outliers etc. The first plot should not have a funnel
-plot(fit.lolv4occ9exp4f)
+plot(mod.lo)
 plot(fit.melv4occ9exp4f)
 plot(fit.hilv4occ9exp4f)
 plot(lonosite)
@@ -365,8 +445,8 @@ lvsplot(fit.lolv4occ10exp4)
 
 ##### Extract number of significant correlations #####
 
-(length(which(rescor.melv3occ9exp4$sig.correlaton!=0))-dim(rescor.melv3occ9exp4$sig.correlaton)[1])/2
-(length(which(rescor.melv4occ9exp4$sig.correlaton!=0))-dim(rescor.melv4occ9exp4$sig.correlaton)[1])/2
+(length(which(rescor.lo$sig.correlaton!=0))-dim(rescor.lo$sig.correlaton)[1])/2
+(length(which(rescor.hi$sig.correlaton!=0))-dim(rescor.hi$sig.correlaton)[1])/2
 (length(which(rescor.melv5occ9exp4$sig.correlaton!=0))-dim(rescor.melv5occ9exp4$sig.correlaton)[1])/2
 
 (length(which(rescor.lolv4occ9exp4f$sig.correlaton!=0))-dim(rescor.lolv4occ9exp4f$sig.correlaton)[1])/2
@@ -379,11 +459,9 @@ lvsplot(fit.lolv4occ10exp4)
 
 ###### Use corrplot package to plot residual correlations between species #####
 
-corrplot(rescor.melv3occ9exp4$sig.correlaton[1:100,1:100], diag = F, type = "lower", title = "Residual correlations from LVM", mar=c(3,0.5,2,1), tl.srt = 45,method = "color")#
-corrplot(rescor.melv4occ9exp4$sig.correlaton[1:100,1:100], type="lower", diag=F, title="Residual correlations", mar=c(3,0.5,2,1), tl.srt=45,method = "color")
+corrplot(rescor.lo$sig.correlaton[1:100,1:100], diag=F, type="lower", title="Residual correlations", mar=c(3,0.5,2,1), tl.srt = 45,method = "color")#
+corrplot(rescor.hi$sig.correlaton[1:100,1:100], type="lower", diag=F, title="Residual correlations", mar=c(3,0.5,2,1), tl.srt=45,method = "color")
 corrplot(rescor.melv5occ9exp4$sig.correlaton[1:100,1:100], type="lower", diag=F, title="Residual correlations", mar=c(3,0.5,2,1), tl.srt=45,method = "color")
-
-corrplot(rescor.lolv4occ9exp4f$sig.correlaton[1:200,1:200], type="lower", diag=F, title="Residual correlations", mar=c(3,0.5,2,1), tl.srt=45,method = "color",tl.pos="n")
 
 
 
@@ -415,36 +493,13 @@ colnames(labelcols)=c("group2","color")
 
 
 head(labelfile)
+unique(labelfile$group2)
 
-#labelsall<-merge(labelfile,labelcols,"group",all.x=F,all.y=F) #"labels"
 labelsall<-merge(labelfile,labelcols,"group2",all.x=F,all.y=F) #"labels"
 labelsall$color<-as.character(labelsall$color)
 head(labelsall)
 labelsall$group2<-factor(labelsall$group2,levels=c("HeterotrophicBacteria","PhotosyntheticBacteria","ChemoautotrophicBacteria","UnknownBacteria","Fungi","HeterotrophicEukaryota","PhotosyntheticEukaryota","UnknownEukaryota","Mesofauna","Plant"))
 
-#old                            
-# c("NonphotosyntheticEukaryota","#673482"),
-# c("PhotosyntheticEukaryota","#466D24"),
-# c("Fungi","#F6EC32"),
-# c("Metazoa","#ff9c34"),
-# c("Plant","#E95275"),
-# c("PhotosyntheticBacteria","#94BA3C"),
-# c("NonphotosyntheticBacteria","#7879BC"),
-# c("OtherMetazoa","black"),
-# c("Nematoda","gray30"),
-# c("Tardigrada","gray55"),
-# c("Rotifera","gray80"),
-# c("Arthropoda","white"),
-# c("AF","red"),
-# c("AP","red"),
-# c("BF","black"),
-# c("FF","gray30"),
-# c("OM","gray55"),
-# c("PP","gray80"),
-# c("RA","white"),
-# c("unknown","red")))
-
-#colnames(labelcols)=c("labels","color")
 
 pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/Figs/legend2.pdf")
 plot(c(1,1),c(1,1))
@@ -460,26 +515,20 @@ dev.off()
 
 ##### lo #####
 #creating sparse matrix
-colMatlo<-rescor.lolv4occ9exp4f$sig.correlaton
-colMatlo[which(rescor.lolv4occ9exp4f$sig.correlaton>0)]<-1
-#colMatlo[which(rescor.lolv4occ9exp4f$sig.correlaton>0)]<-0
-colMatlo[which(rescor.lolv4occ9exp4f$sig.correlaton<0)]<- -1
-#colMatlo[which(rescor.lolv4occ9exp4f$sig.correlaton<0)]<- 0
+colMatlo<-rescor.lo$sig.correlaton
+colMatlo[which(rescor.lo$sig.correlaton>0)]<-1
+colMatlo[which(rescor.lo$sig.correlaton<0)]<- -1
 
-colMatlo<-rescor.lolv4occ9exp4nosite$sig.correlaton
-colMatlo[which(rescor.lolv4occ9exp4nosite$sig.correlaton>0)]<-1
-colMatlo[which(rescor.lolv4occ9exp4nosite$sig.correlaton<0)]<- -1
+# colMatlo<-rescor.lolv4occ9exp4nosite$sig.correlaton
+# colMatlo[which(colMatlo>.85)]<-1
+# colMatlo[which(colMatlo<(-.85))]<- -1
+# colMatlo[which(colMatlo<.85&colMatlo>(-.85))]<-0
 
-colMatlo<-rescor.lolv4occ9exp4nosite$sig.correlaton
-colMatlo[which(colMatlo>.85)]<-1
-colMatlo[which(colMatlo<(-.85))]<- -1
-colMatlo[which(colMatlo<.85&colMatlo>(-.85))]<-0
-
-temp<-colMatlo[upper.tri(colMatlo)]
-temp2<-temp[temp!=0]
-hist(temp2)
-sort(temp2)
-length(temp2)
+# temp<-colMatlo[upper.tri(colMatlo)]
+# temp2<-temp[temp!=0]
+# hist(temp2)
+# sort(temp2)
+# length(temp2)
 
 graphlo1<-graph_from_adjacency_matrix(colMatlo, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
 myedgelistlo<-data.frame(as_edgelist(graphlo1),weight=E(graphlo1)$weight) #just the edges
@@ -502,8 +551,8 @@ graphlo2$layout <- layout_in_circle(graphlo2,order=orderlo)
 #graphlo2$layout <- layout_in_circle
 
 #pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/Figs/networklocircleposblue.pdf") 
-plot(graphlo2,vertex.size=4,edge.curved=F,edge.color=ifelse(myedgelistlo$weight==1,"#ce4d42","#687dcb"),vertex.color=colorgraphlo$color,edge.width=.7,vertex.label=NA)#,vertex.shape=shapesgraplo  
-plot(graphlo2,vertex.size=4,edge.curved=F,edge.color=ifelse(myedgelistlo$weight==1,"#687dcb","#ce4d42"),vertex.color=colorgraphlo$color,edge.width=.7,vertex.label=NA)#,vertex.shape=shapesgraplo  
+#plot(graphlo2,vertex.size=4,edge.curved=F,edge.color=ifelse(myedgelistlo$weight==1,"#ce4d42","#687dcb"),vertex.color=colorgraphlo$color,edge.width=.7,vertex.label=NA)#,vertex.shape=shapesgraplo  positive is red
+plot(graphlo2,vertex.size=4,edge.curved=F,edge.color=ifelse(myedgelistlo$weight==1,"#687dcb","#ce4d42"),vertex.color=colorgraphlo$color,edge.width=.7,vertex.label=NA)#,vertex.shape=shapesgraplo  positive is blue
 #dev.off()
 
 colorgraphlo[which(colorgraphlo$group=="Mesofauna"),]
@@ -580,19 +629,14 @@ dim(temp2)
 
 ##### hi #####
 #creating sparse matrix
-colMathi<-rescor.hilv4occ9exp4f$sig.correlaton
-colMathi[which(rescor.hilv4occ9exp4f$sig.correlaton>0)]<-1
-colMathi[which(rescor.hilv4occ9exp4f$sig.correlaton<0)]<- -1
-#colMathi[which(rescor.hilv4occ9exp4f$sig.correlaton<0)]<- 0
+colMathi<-rescor.hi$sig.correlaton
+colMathi[which(rescor.hi$sig.correlaton>0)]<-1
+colMathi[which(rescor.hi$sig.correlaton<0)]<- -1
 
 # colMathi<-rescor.hilv4occ9exp4f$sig.correlaton
 # colMathi[which(colMathi>.5)]<-1
 # colMathi[which(colMathi<(-.5))]<- -1
 # colMathi[which(colMathi<.5&colMathi>(-.5))]<-0
-
-colMathi<-rescor.hilv4occ9exp4nosite$sig.correlaton
-colMathi[which(rescor.hilv4occ9exp4nosite$sig.correlaton>0)]<-1
-colMathi[which(rescor.hilv4occ9exp4nosite$sig.correlaton<0)]<- -1
 
 graphhi1<-graph_from_adjacency_matrix(colMathi, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
 myedgelisthi<-data.frame(as_edgelist(graphhi1),weight=E(graphhi1)$weight) #just the edges
@@ -615,7 +659,7 @@ graphhi2$layout <- layout_in_circle(graphhi2,order=orderhi)
 #graphhi2$layout <- layout_in_circle
 
 #pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/Figs/networkhicircleposblue.pdf") 
-plot(graphhi2,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelisthi$weight==1,"#ce4d42","#687dcb"),vertex.color=colorgraphhi$color,edge.width=.7)#,layout=l3  
+#plot(graphhi2,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelisthi$weight==1,"#ce4d42","#687dcb"),vertex.color=colorgraphhi$color,edge.width=.7)#,layout=l3  
 plot(graphhi2,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelisthi$weight==1,"#687dcb","#ce4d42"),vertex.color=colorgraphhi$color,edge.width=.7)#,layout=l3  
 #dev.off()
 
@@ -1289,3 +1333,33 @@ get.residual.cor2<-function (object, est = "median", prob = .9)
               covariance = rescov_mat, precision = respres_mat, sig.precision = sig_respres_mat, 
               trace = final_trace))
 }
+
+
+
+
+##### try transforming the data with a clr #####
+
+#started with comm.bio, took each data set apart, added 1 to the 0s, calculated the clr (on everything except plants), put the data back together, then subset into lo/hi and deleted rare taxa
+colnames(hmscY)[7208:7262]
+
+hmscYN<-hmscY[,1:142]; hmscYN[hmscYN==0]<-1
+hmscYN2<-t(apply(hmscYN, 1, function(x){log(x) - mean(log(x))}))
+
+cbind(hmscYN[,1],hmscYN2[,1])
+hist(hmscYN[,9])
+hist(hmscYN2[,9])
+
+hmscYS<-hmscY[,143:1233]; hmscYS[hmscYS==0]<-1
+hmscYS2<-t(apply(hmscYS, 1, function(x){log(x) - mean(log(x))}))
+
+hmscYBac<-hmscY[,1234:6086]; hmscYBac[hmscYBac==0]<-1
+hmscYBac2<-t(apply(hmscYBac, 1, function(x){log(x) - mean(log(x))}))
+
+hmscYITS<-hmscY[,6087:7208]; hmscYITS[hmscYITS==0]<-1
+hmscYITS2<-t(apply(hmscYITS, 1, function(x){log(x) - mean(log(x))}))
+
+hmscYPlant<-hmscY[,7209:7262]
+
+hmscY2<-cbind(hmscYN2,hmscYS2,hmscYBac2,hmscYITS2,hmscYPlant)
+hmscY2[1:5,1:5]
+

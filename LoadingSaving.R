@@ -23,9 +23,9 @@ MovingUphill4_WorkspaceDataCleaning.Rdata
 MovingUphill4_WorkspaceDataCleaningOutput.Rdata #just the 15 output files I need for downstream analysis, all intermediate files deleted from env
 MovingUphill4_WorkspaceAnalysis.Rdata
 
-save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis.Rdata")  # 
+save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis2.Rdata")  # 
 
-load("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceDataCleaning.Rdata") 
+load("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis.Rdata") 
 
 
 #rm(list=setdiff(ls(), c("fit.lolv4occ9exp4","rescor.lolv4occ9exp4")))
@@ -97,10 +97,14 @@ library(tidyr)
 library(dplyr)
 library(plotrix)
 
-#for doing permutation test
+#for doing permutation test, and imputing zeros
 library(zCompositions)
 #library(combinat)
 #library(coin)
+
+#for boral
+library(boral) #Need version 0.7 or later, available on CRAN.
+library(Matrix)
 
 #detach(package:igraph)
 #sessionInfo()
