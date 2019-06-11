@@ -58,6 +58,36 @@ plotdata$Taxa<-factor(plotdata$Taxa,levels=unique(plotdata$Taxa))
 as.data.frame(plotdata)
 plotdata$lomehi<-factor(plotdata$lomehi,levels=c("lo","me","hi"))
 
+#10 bacteria, 4 fungi, 7 small euks, 4 large euks
+mycols<-c("#D9A125",#yellow
+          "#4BC366",#light green
+          "#6F94DE",#light blue
+          "#B4405E",#red
+          "#D185E0",#light purple
+          "#659125",#green
+          "#ff99a4",#light pink
+          "#cf6f23",#orange
+          "#5C426C",#dark purple
+          "#6768A3",#medium blue last bact
+          
+          "#cf6f23",#orange" 
+          "#D9A125",#yellow
+          "#B4405E",#red
+          "#6768A3",#medium blue
+          
+          "#cf6f23",#orange
+          "#659125",#green
+          "#4BC366",#light green          
+          "#D185E0",#light purple
+          "#D9A125",#yellow
+          "#5C426C",#dark purple 
+          "#008B8B",#greenblue "#ff99a4",#light pink       
+          
+          "#cf6f23",#orange
+          "#D9A125", #yellow          
+          "#5C426C", #dark purple
+          "#6F94DE")#light blue
+
 #pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/relabuntaxavsplantdensitygroupsR2.pdf",width=6.5,height=4.3)#,width=4.3, height=5.3
 ggplot(plotdata,aes(x=lomehi,y=mean_abun,group=typeTaxa,color=Taxa))+
   labs(x = "",y="Relative abundance")+
@@ -71,35 +101,6 @@ ggplot(plotdata,aes(x=lomehi,y=mean_abun,group=typeTaxa,color=Taxa))+
   guides(col = guide_legend(ncol = 1))
 #dev.off()
 
-#10 bacteria, 4 fungi, 7 small euks, 4 large euks
-mycols<-c("#D9A125",#yellow
-          "#4BC366",#light green
-          "#6F94DE",#light blue
-          "#B4405E",#red
-          "#D185E0",#light purple
-          "#659125",#green
-          "#ff99a4",#light pink
-          "#cf6f23",#orange
-          "#5C426C",#dark purple
-          "#6768A3",#medium blue last bact
-
-          "#cf6f23",#orange" 
-          "#D9A125",#yellow
-          "#B4405E",#red
-          "#6768A3",#medium blue
-          
-          "#cf6f23",#orange
-          "#659125",#green
-          "#4BC366",#light green          
-          "#D185E0",#light purple
-          "#D9A125",#yellow
-          "#5C426C",#dark purple 
-          "#008B8B",#greenblue "#ff99a4",#light pink       
-
-          "#cf6f23",#orange
-          "#D9A125", #yellow          
-          "#5C426C", #dark purple
-          "#6F94DE")#light blue
 
 
 #scatter plots - super messy
@@ -147,8 +148,11 @@ anovaoutput[order(anovaoutput$Taxa),]
 
 
 
+
 ##### Ordination #####
-#input file
+
+#input file, from beginning of boral script
+#comm.bio is nice b/c it is already merged with biogeo6 so the microbial data have been reduced to 75 total samples (vs. 90) and b/c all microbial datasets are then all in the same order
 comm.ord<-comm.bio
 
 #calculate CLR on full datasets for 16S, ITS, EukS, EukN
@@ -165,14 +169,121 @@ commS<-comm.ord[,505:3665]
 commB<-comm.ord[,3666:20277]
 commI<-comm.ord[,20278:24511]
 
-ind<-which(colSums(commN)>0);length(ind)
+rownames(commN)<-env$X.SampleID
+rownames(commS)<-env$X.SampleID
+rownames(commB)<-env$X.SampleID
+rownames(commI)<-env$X.SampleID
+
+#take out doubletons and singletons
+ind<-which(colSums(commN>0)>2);length(ind)
 commN2<-commN[ind]
+ind<-which(colSums(commS>0)>2);length(ind)
+commS2<-commS[ind]
+ind<-which(colSums(commB>0)>2);length(ind)
+commB2<-commB[ind]
+ind<-which(colSums(commI>0)>2);length(ind)
+commI2<-commI[ind]
+
+#estimate zeros and calculate clr
+commN3 <- cmultRepl(commN2,label=0, method="CZM")
+commN4 <- t(apply(commN3, 1, function(x){log(x) - mean(log(x))}))
+commS3 <- cmultRepl(commS2,label=0, method="CZM")
+commS4 <- t(apply(commS3, 1, function(x){log(x) - mean(log(x))}))
+commB3 <- cmultRepl(commB2,label=0, method="CZM")
+commB4 <- t(apply(commB3, 1, function(x){log(x) - mean(log(x))}))
+commI3 <- cmultRepl(commI2,label=0, method="CZM")
+commI4 <- t(apply(commI3, 1, function(x){log(x) - mean(log(x))}))
+
+#just the stats:
+adonis2(commN4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
+adonis2(commS4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
+adonis2(commB4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
+adonis2(commI4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
+
+#plots and extra analyses and visuals are below
+
+#pca
+ordN <- prcomp(commN4)
+totvarN<-sum(ordN$sdev^2)
+PC1 <- paste("PC1: ", round(sum(ordN$sdev[1]^2)/totvarN, 3))
+PC2 <- paste("PC2: ", round(sum(ordN$sdev[2]^2)/totvarN, 3))
+biplot(ordN, var.axes=T, scale=0, xlab=PC1, ylab=PC2)
+plot(scores(ordN),col=col,bg=col,pch=21,cex=2)
+
+#the gloor paper suggests using pca then anosim
+anosim(commN4,grouping=env$lomehi,distance="euclidean") #pretty much same as adonis, but adonis is more robust. adonis I think is the same as anova but maybe with slightly different math
+adonis2(commN4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
+
+#rda
+myrda <- rda(commN4 ~ lomehi, data = env)
+summary(myrda)
+anova(myrda, by="margin", permutations = 1000)
+plot(myrda,scaling=1)
+
+
+#### dbrda - dbrda is same as rda with euclidean distance ####
+
+#nematodes, explains 8.2% p=.001
+mydbrda<-dbrda(commN4~lomehi,distance="euclidean",data=env)
+anova(mydbrda, by = "margin",permutations = how(nperm=10000))
+
+col<-ifelse(env$lomehi=="lo","#9350a1",ifelse(env$lomehi=="me","#697cd4",ifelse(env$lomehi=="hi","#62ad64","#b8475f")))
+#low purple, meblue , hi green, else red
+
+plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=2)
+text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
+text(scores(mydbrda)$sites,labels=env$Sample_name)
+
+
+#Small euks, explains 8.2% p=0.001
+mydbrda<-dbrda(commS4~lomehi,distance="euclidean",data=env)
+anova(mydbrda, by = "margin",permutations = how(nperm=10000))
+
+col<-ifelse(env$lomehi=="lo","#9350a1",ifelse(env$lomehi=="me","#697cd4",ifelse(env$lomehi=="hi","#62ad64","#b8475f")))
+#low purple, meblue , hi green, else red
+
+plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=2)
+text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
+text(scores(mydbrda)$sites,labels=env$Sample_name)
+
+
+#Bact, explains 9.3%, p=0.001
+mydbrda<-dbrda(commB4~lomehi,distance="euclidean",data=env)
+anova(mydbrda, by = "margin",permutations = how(nperm=10000))
+
+col<-ifelse(env$lomehi=="lo","#9350a1",ifelse(env$lomehi=="me","#697cd4",ifelse(env$lomehi=="hi","#62ad64","#b8475f")))
+#low purple, meblue , hi green, else red
+
+plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=2)
+text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
+text(scores(mydbrda)$sites,labels=env$Sample_name)
+
+
+#Fungi, explains 10.2% p=0.001
+mydbrda<-dbrda(commI4~lomehi,distance="euclidean",data=env)
+anova(mydbrda, by = "margin",permutations = how(nperm=10000))
+
+col<-ifelse(env$lomehi=="lo","#9350a1",ifelse(env$lomehi=="me","#697cd4",ifelse(env$lomehi=="hi","#62ad64","#b8475f")))
+#low purple, meblue , hi green, else red
+
+plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=2)
+text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
+text(scores(mydbrda)$sites,labels=env$Sample_name)
 
 
 
 
 
 
+
+
+
+
+
+
+
+
+#old code
 mynmds<-metaMDS(comm.dataBac[,32:3430],dist="bray",trymax = 1000)
 #old lomehi
 col=ifelse(comm.dataBac$lomehi=="lo","lightblue",NA)
@@ -201,8 +312,3 @@ col[which(ordi.bact$lomehi=="hi")]<-"darkblue"
 plot(scores(mynmds),col=col,pch=21,bg=col)#-scores(mynmds)[,1],scores(mynmds)[,2]
 ordiellipse(mynmds,groups=col,col=c("darkblue","dodgerblue","lightblue"),conf=.99999,kind="se",lwd=2)#
 
-
-
-
-comm.dataBac[1:5,32:33]
-ordi.bact[1:5,54:55]

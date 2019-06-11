@@ -1,7 +1,8 @@
 #Order of running files:
 #DataCleaning.R: to clean microbe and plant data
 #SuccessionalStagePCA.R: to incorporate biogeochemistry and do a PCA for successional stage
-#
+#boral: doing a little more data reorganizing, calculating clr, running hirarchical models, graphing networks
+#Randomizations.R: 
 
 
 #Loading/saving/packages needed
@@ -21,11 +22,12 @@ MovingUphill4_WorkspaceITSBactTrials.Rdata #dada2 trials in R when I was testing
 MovingUphill4_Workspace3ITSbioinformatics.Rdata
 MovingUphill4_WorkspaceDataCleaning.Rdata
 MovingUphill4_WorkspaceDataCleaningOutput.Rdata #just the 15 output files I need for downstream analysis, all intermediate files deleted from env
-MovingUphill4_WorkspaceAnalysis.Rdata
+MovingUphill4_WorkspaceAnalysisNetworkTrials.Rdata #all the different trials I ran when deciding the parameters for the networks
+MovingUphill4_WorkspaceAnalysis1.Rdata 
 
-save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis2.Rdata")  # 
+save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/")  # 
 
-load("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis3.Rdata") 
+load("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis2.Rdata") 
 
 
 #rm(list=setdiff(ls(), c("fit.lolv4occ9exp4","rescor.lolv4occ9exp4")))

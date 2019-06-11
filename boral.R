@@ -115,6 +115,21 @@ hmscYlo2Bac<-hmscYlo2[,1248:7101]
 hmscYlo2ITS<-hmscYlo2[,7102:8426]
 hmscYlo2Plant<-hmscYlo2[,8427:8442]
 
+#randomize if you want, this preserves species occurrence frequency and sample species richness
+hmscYlo2Nr<-randomizeMatrix(hmscYlo2N, null.model="independentswap",iterations=30000)
+hmscYlo2Sr<-randomizeMatrix(hmscYlo2S, null.model="independentswap",iterations=500000)
+hmscYlo2Bacr<-randomizeMatrix(hmscYlo2Bac, null.model="independentswap",iterations=5000000)
+hmscYlo2ITSr<-randomizeMatrix(hmscYlo2ITS, null.model="independentswap",iterations=500000)
+hmscYlo2Plantr<-randomizeMatrix(hmscYlo2Plant, null.model="independentswap",iterations=30000)
+#replace so I can carry on with same code
+hmscYlo2N<-hmscYlo2Nr
+hmscYlo2S<-hmscYlo2Sr
+hmscYlo2Bac<-hmscYlo2Bacr
+hmscYlo2ITS<-hmscYlo2ITSr
+hmscYlo2Plant<-hmscYlo2Plantr
+hmscYlo2<-cbind(hmscYlo2N,hmscYlo2S,hmscYlo2Bac,hmscYlo2ITS,hmscYlo2Plant)
+#
+
 #Impute zeros
 hmscYlo2N2 <- cmultRepl(hmscYlo2N,label=0, method="CZM")
 hmscYlo2S2 <- cmultRepl(hmscYlo2S,label=0, method="CZM")
@@ -169,9 +184,24 @@ hmscYme2Bac<-hmscYme2[,1466:9375]
 hmscYme2ITS<-hmscYme2[,9376:10937]
 hmscYme2Plant<-hmscYme2[,10938:10971]
 
+#randomize if you want, this preserves species occurrence frequency and sample species richness
+hmscYme2Nr<-randomizeMatrix(hmscYme2N, null.model="independentswap",iterations=30000)
+hmscYme2Sr<-randomizeMatrix(hmscYme2S, null.model="independentswap",iterations=500000)
+hmscYme2Bacr<-randomizeMatrix(hmscYme2Bac, null.model="independentswap",iterations=5000000)
+hmscYme2ITSr<-randomizeMatrix(hmscYme2ITS, null.model="independentswap",iterations=500000)
+hmscYme2Plantr<-randomizeMatrix(hmscYme2Plant, null.model="independentswap",iterations=30000)
+#replace so I can carry on with same code
+hmscYme2N<-hmscYme2Nr
+hmscYme2S<-hmscYme2Sr
+hmscYme2Bac<-hmscYme2Bacr
+hmscYme2ITS<-hmscYme2ITSr
+hmscYme2Plant<-hmscYme2Plantr
+hmscYme2<-cbind(hmscYme2N,hmscYme2S,hmscYme2Bac,hmscYme2ITS,hmscYme2Plant)
+#
+
 #Impute zeros
 hmscYme2N2 <- cmultRepl(hmscYme2N,label=0, method="CZM")
-hmscYme2S2 <- cmultRepl(hmscYme2S,label=0, method="CZM")
+hmscYme2S2 <- cmultRepl(hmscYme2S,label=0, method="CZM");min(hmscYme2S2)#this was giving negative numbers so I did the randomization above a few times and then it was ok
 hmscYme2Bac2 <- cmultRepl(hmscYme2Bac,label=0, method="CZM")
 hmscYme2ITS2 <- cmultRepl(hmscYme2ITS,label=0, method="CZM")
 
@@ -215,11 +245,30 @@ hmscYhi2Bac<-hmscYhi2[,2071:9952]
 hmscYhi2ITS<-hmscYhi2[,9953:11893]
 hmscYhi2Plant<-hmscYhi2[,11894:11942]
 
+#randomize if you want, this preserves species occurrence frequency and sample species richness
+hmscYhi2Nr<-randomizeMatrix(hmscYhi2N, null.model="independentswap",iterations=30000)
+hmscYhi2Sr<-randomizeMatrix(hmscYhi2S, null.model="independentswap",iterations=800000)
+hmscYhi2Bacr<-randomizeMatrix(hmscYhi2Bac, null.model="independentswap",iterations=6000000)
+hmscYhi2ITSr<-randomizeMatrix(hmscYhi2ITS, null.model="independentswap",iterations=800000)
+hmscYhi2Plantr<-randomizeMatrix(hmscYhi2Plant, null.model="independentswap",iterations=30000)
+#replace so I can carry on with same code
+hmscYhi2N<-hmscYhi2Nr
+hmscYhi2S<-hmscYhi2Sr
+hmscYhi2Bac<-hmscYhi2Bacr
+hmscYhi2ITS<-hmscYhi2ITSr
+hmscYhi2Plant<-hmscYhi2Plantr
+hmscYhi2<-cbind(hmscYhi2N,hmscYhi2S,hmscYhi2Bac,hmscYhi2ITS,hmscYhi2Plant)
+#
+
 #Impute zeros
 hmscYhi2N2 <- cmultRepl(hmscYhi2N,label=0, method="CZM")
-hmscYhi2S2 <- cmultRepl(hmscYhi2S,label=0, method="CZM")
+hmscYhi2S2 <- cmultRepl(hmscYhi2S,label=0, method="CZM");min(hmscYhi2S2)
+sort(as.matrix(hmscYhi2S2))
+hmscYhi2S2[hmscYhi2S2<=0]<-0.0001434328
 hmscYhi2Bac2 <- cmultRepl(hmscYhi2Bac,label=0, method="CZM")
-hmscYhi2ITS2 <- cmultRepl(hmscYhi2ITS,label=0, method="CZM")
+hmscYhi2ITS2 <- cmultRepl(hmscYhi2ITS,label=0, method="CZM");min(hmscYhi2ITS2)
+sort(as.matrix(hmscYhi2ITS2))
+hmscYhi2ITS2[hmscYhi2ITS2<=0]<-7.780918e-05
 
 #Calculate clr
 hmscYhi2N3 <- t(apply(hmscYhi2N2, 1, function(x){log(x) - mean(log(x))}))
@@ -227,7 +276,7 @@ hmscYhi2S3 <- t(apply(hmscYhi2S2, 1, function(x){log(x) - mean(log(x))}))
 hmscYhi2Bac3 <- t(apply(hmscYhi2Bac2, 1, function(x){log(x) - mean(log(x))}))
 hmscYhi2ITS3 <- t(apply(hmscYhi2ITS2, 1, function(x){log(x) - mean(log(x))}))
 
-#I could rescale plant data essentially by dividing each cell by the max abundance, so that it is preserving all properties (e.g. I dont want to turn it into relative abundance), or by dividing each plant species by its max abundance
+#I could rescale plant data essentially by dividing each cell by the max abundance, so that it is preserving all properties (e.g. I dont want to turn it into relative abundance), or by dividing each plant species by its max abundance, but I will leave it as count data and model as neg.bin
 
 hmscYhi3<-cbind(hmscYhi2N3,hmscYhi2S3,hmscYhi2Bac3,hmscYhi2ITS3,hmscYhi2Plant)
 hmscYhi2[1:5,1:5]
@@ -239,8 +288,8 @@ hmscYhi3[1:5,1:5]
 #select species with greater than X (X+1 or more) occurrences
 
 ## low ##
-ind<-which(colSums(hmscYlo2>0)>8)
-hmscYlo2sub<-hmscYlo2[,ind] #subset the raw data as well just for looking at histograms
+ind<-which(colSums(hmscYlo2>0)>11)
+#hmscYlo2sub<-hmscYlo2[,ind] #subset the raw data as well just for looking at histograms
 length(ind)
 hmscYlo4<-hmscYlo3[,ind]
 hmscXlo
@@ -248,7 +297,7 @@ dim(hmscYlo4)
 dim(hmscXlo)
 
 ## medium ##
-ind<-which(colSums(hmscYme2>0)>8)
+ind<-which(colSums(hmscYme2>0)>11)
 length(ind)
 hmscYme4<-hmscYme3[,ind]
 hmscXme
@@ -256,7 +305,7 @@ dim(hmscYme4)
 dim(hmscXme)
 
 ## high ##
-ind<-which(colSums(hmscYhi2>0)>8)
+ind<-which(colSums(hmscYhi2>0)>11)
 length(ind)
 hmscYhi4<-hmscYhi3[,ind]
 hmscXhi
@@ -266,7 +315,7 @@ dim(hmscXhi)
 min(hmscYlo4)
 min(hmscYme4)
 min(hmscYhi4)
-max(hmscYlo4[,1:519])#not including plants
+max(hmscYlo4[,1:519])#not including plants for >8
 max(hmscYme4[,1:498])
 max(hmscYhi4[,1:469])
 hmscXlo
@@ -281,15 +330,15 @@ qqnorm(log(hmscYlo4[,117]+1))
 qqnorm(hmscYlo4[,117])
 plot(hmscYlo2sub[,117],hmscYlo4[,117])
 
-#check if the values are too low that some tolerance is messing up the CI estimates, yes important to scale y, instead of scaling Y I will use the sqrt transform of the percent. I will scale x, since they differ so much in range
+#check if the values are too low that some tolerance is messing up the CI estimates, yes important to scale y, but it is already fairly scaled here. I will scale x, since they differ so much in range
 hmscXlo2<-scale(hmscXlo)
 hmscXme2<-scale(hmscXme)
 hmscXhi2<-scale(hmscXhi)
 
 
-####do randomization#####
-hmscYr<-randomizeMatrix(hmscYc, null.model="independentswap",iterations=30000) #I upped to 30000 from 1000 bc it seems like things weren't getting randomized
-hmscYc<-hmscYr
+#### do randomization #####
+#need to remove plants first. this doesn't work on clr only on abundance data
+#hmscYlor<-randomizeMatrix(hmscYlo4[,1:305], null.model="independentswap",iterations=30000) #I upped to 30000 from 1000 bc it seems like things weren't getting randomized
 #######
 
 
@@ -306,39 +355,181 @@ hmscXhi3<-as.matrix(hmscXhi2)
 ##### Fit the LVM using boral and calculate residual correlation matrix#####
 
 #List of files produced:
+mod.lo - 4 latent, fewer iterations to check things so it fits fast, >8 frequency
+mod.hi
+mod.lof - more iterations (f for final model)
+mod.mef
+mod.hif
+mod.lo9 - >9 and neg.bin for plants
+mod.me9 - >9 and neg.bin for plants
+mod.hi9 - >9 and neg.bin for plants
+mod.hi12 - >12 and neg.bin for plants
+mod.hi16 - >16 and neg.bin for plants
+mod.hi9lv0 - >9 and no latent, neg.bin for plants
+mod.hi9fixed0 - >9 and no fixed, neg.bin for plants
+mod.lo9fixed0 - >9 and no fixed, neg.bin for plants
+mod.hi9pois - >9 and pois for plants
+mod.mef9lv2 - testing how many latent variables to use
+mod.mef9lv3
+mod.mef9lv4
+mod.mef9lv5
+mod.mef9lv6
+mod.lo9f - final model with >9 frequency, long chains, 4 latent variables, plants modeled as neg.bin
+mod.me9f
+mod.hi9f
+mod.lo10f - final model with >10 frequency, long chains, 4 latent variables, plants modeled as neg.bin
+mod.me10f
+mod.hi10f
+mod.lo11f - final model with >11 frequency, long chains, 4 latent variables, plants modeled as neg.bin
+mod.me11f
+mod.hi11f
+mod.lo8f - final model with >8 frequency, long chains, 4 latent variables, plants modeled as neg.bin
+mod.me8f
+mod.hi8f
+mod.hi10fs - s for swapping the order of deleting species then calculating clr, >10, 4 latent, plants neg.bin
+mod.lo12f - final model with >12 frequency, long chains, 4 latent variables, plants modeled as neg.bin
+mod.me12f
+mod.hi12f
+*mod.lo11flv3 - final model with >11 frequency, long chains, 3 latent variables, plants modeled as neg.bin
+*mod.me11flv3
+*mod.hi11flv3
+mod.lo12flv3 - final model with >12 frequency, long chains, 3 latent variables, plants modeled as neg.bin
 
-#Using the default mcmc parameters, the models take about 2 hrs to fit.  mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123)
-#Using shorter chains, it takes about 12 min to fit.  mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 3, seed = 123)
-# in the tutorial they add this to the model fitting code, hypparams = c(20,20,20,20), however, now if you wanted to change this you need to put it in a prior.control statement or something. I am just using the default here
+### *THE FINAL MODELS THAT I WILL USE FOR THE MANUSCRIPT: mod.lo11flv3, mod.me11flv3, mod.hi11flv3 (calculating clr then subsetting data, keeping species with >11 frequency, 3 latent variables, plants modeled as neg.big)
 
-#Using shorter chains
-#start 3:22pm, end 3:29
-mod.lo<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 3, seed = 123))#, row.eff = "random"
-mod.hi <- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 3, seed = 123))#, row.eff = "random"
+#Notes and decisions: 
+#changing from >8 to >9 frequency has very little impact on networks, just a few fewer taxa and interactions. 
+#changing from normal to neg.bin for plants should be done b/c of nonnormality of plant count data. neg.bin fits better than poisson - residuals with poisson are very large >6, with neg.bin ~3
+#adding environmetnal data is super important, NOT for explaining variation per se or explaining co-variation in the models, but rather in defining what is a significant interactoin. There are much much fewer significant interactions after accounting for enviromental variables
+#Changing the order of operations to remove >10, then calculate clr, does not change the nubmer of sig interactions but it dramatically changes the direction with many more negative interactions (50% vs. 80% positive interactions)
+#using shorter chains for testing is ok to a certain extent but don't expect all the interactions to be included in the final model if you rerun it with longer chains, some shifting will occur
 
-#Using longer chains - final models
-mod.lof<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#, row.eff = "random"
-rescor.lof <- get.residual.cor(mod.lof) 
-save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis3.Rdata")  # 
+#Fitting notes
+#Using the default mcmc parameters, the models take about 30 min to fit.  mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123)
+#Using shorter chains, it takes about 12 min to fit.  mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 6, seed = 123); I changed nthin from 3 to 6 so that the get.residual.cor would speed up.
+#In the tutorial they add this to the model fitting code, hypparams = c(20,20,20,20), however, now if you wanted to change this you need to put it in a prior.control statement or something. I am just using the default here
+#Be sure to remove row.eff = "random", a row effect standardizes across samples, but I don't want to do that b/c I already relativized my data and don't want to standardize across microbes and plants
 
-mod.hif<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#, row.eff = "random"
-rescor.hif <- get.residual.cor(mod.hif) 
+
+#Using shorter chains, start 3:22pm, end 3:29 for model, 11 min for residual corr matrix
+mod.lo9fixed0<- boral(y = hmscYlo5, X = NULL, lv.control = list(num.lv = 4), family = c(rep("normal",437),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 6, seed = 123))#
+rescor.lo9fixed0 <- get.residual.cor(mod.lo9fixed0)
+
+mod.me9<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 4), family = c(rep("normal",414),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 6, seed = 123))#
+rescor.me9 <- get.residual.cor(mod.me9)
+
+mod.hi9pois <- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = c(rep("normal",384),rep("poisson",12)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 6, seed = 123))#
+rescor.hi9pois <- get.residual.cor(mod.hi9pois)
+
+
+#Using longer chains - final models, start=5pm, end=5:30
+mod.lo9f<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 4), family = c(rep("normal",437),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.lo9f <- get.residual.cor(mod.lo9f) 
+
+mod.me9f<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 4), family = c(rep("normal",414),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.me9f <- get.residual.cor(mod.me9f) 
+
+mod.hi9f<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = c(rep("normal",384),rep("negative.binomial",12)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.hi9f <- get.residual.cor(mod.hi9f) 
+
+mod.lo10f<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 4), family = c(rep("normal",357),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.lo10f <- get.residual.cor(mod.lo10f) 
+
+mod.me10f<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 4), family = c(rep("normal",338),rep("negative.binomial",3)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.me10f <- get.residual.cor(mod.me10f) 
+
+mod.hi10f<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = c(rep("normal",311),rep("negative.binomial",10)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.hi10f <- get.residual.cor(mod.hi10f) 
+
+
+mod.lo11f<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 4), family = c(rep("normal",305),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.lo11f <- get.residual.cor(mod.lo11f) 
+
+mod.me11f<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 4), family = c(rep("normal",298),rep("negative.binomial",3)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.me11f <- get.residual.cor(mod.me11f) 
+
+mod.hi11f<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = c(rep("normal",265),rep("negative.binomial",8)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.hi11f <- get.residual.cor(mod.hi11f) 
+
+
+mod.lo8f<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 4), family = c(rep("normal",519),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.lo8f <- get.residual.cor(mod.lo8f) 
+
+mod.me8f<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 4), family = c(rep("normal",498),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.me8f <- get.residual.cor(mod.me8f) 
+
+mod.hi8f<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = c(rep("normal",469),rep("negative.binomial",14)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.hi8f <- get.residual.cor(mod.hi8f) 
+
+
+#mod.lo12f<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 4), family = c(rep("normal",305),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.lo12f <- get.residual.cor(mod.lo12f) 
+
+#mod.me12f<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 4), family = c(rep("normal",298),rep("negative.binomial",3)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.me12f <- get.residual.cor(mod.me12f) 
+
+mod.hi12f<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 4), family = c(rep("normal",214),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.hi12f <- get.residual.cor(mod.hi12f) 
+
+
+mod.lo11flv3<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 3), family = c(rep("normal",305),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.lo11flv3 <- get.residual.cor(mod.lo11flv3) 
+
+mod.me11flv3<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 3), family = c(rep("normal",298),rep("negative.binomial",3)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.me11flv3 <- get.residual.cor(mod.me11flv3) 
+
+mod.hi11flv3<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 3), family = c(rep("normal",265),rep("negative.binomial",8)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.hi11flv3 <- get.residual.cor(mod.hi11flv3) 
+
+
+#mod.lo12flv3<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 3), family = c(rep("normal",246),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.lo12flv3 <- get.residual.cor(mod.lo12flv3) 
+
+mod.me12flv3<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 3), family = c(rep("normal",237),rep("negative.binomial",3)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.me12flv3 <- get.residual.cor(mod.me12flv3) 
+
+#mod.hi12flv3<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 3), family = c(rep("normal",214),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.hi12flv3 <- get.residual.cor(mod.hi12flv3) 
+
+#Randomized matrices
+mod.lo11flv3r<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 3), family = c(rep("normal",305),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.lo11flv3r <- get.residual.cor(mod.lo11flv3r) 
+
+mod.me11flv3r<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 3), family = c(rep("normal",298),rep("negative.binomial",3)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.me11flv3r <- get.residual.cor(mod.me11flv3r) 
+
+mod.hi11flv3r<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 3), family = c(rep("normal",265),rep("negative.binomial",8)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.hi11flv3r <- get.residual.cor(mod.hi11flv3r) 
 save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis2.Rdata")  # 
 
-#fitting models for comparing percent covariance explained by env, take row.eff out
-#it looks lik this is what I used for my final models in the second ISME submission. the results are very different from not using the site effect. In the Hui 2016 paper he says that the row effect adjusts for differnces in site total abundance so that, so if you want relative abundance include it. Except the other thing is that he only uses it in latent-only variable models, not models with environmental variables: "Note that we have chosen to remove the row effect, as we are now using the environmental covariates directly to also explain the differences in site total abundance". I *think* my thinking before was that I've already relativized my data, so I don't want it relativized again & also that I didn't want to standardize across different groups of organisms plants/bacteria/fungi. However, I am still very suprized that the differences between the models are so huge. it probably has to do with on sampl having a higher total than another so things are going to be mor positivly correlatd, but this is real, b/c if w included all taxa, they would have those abundances and be positively correlated.
-#fit.hilv4occ9exp4nosite <- boral(y = hmscYe, X = covX, num.lv = 4, family = "negative.binomial", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))
-#fit.lolv4occ9exp0nosite <- boral(y = hmscYe, X = NULL, num.lv = 4, family = "negative.binomial", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))
-hinosite <- boral(y = hmscYehi, X = covXhi, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 30, seed = 123))
-lonosite <- boral(y = hmscYelo, X = covXlo, lv.control = list(num.lv = 4), family = "normal", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 30, seed = 123))
-hirnosite <- boral(y = hmscYehir, X = covXhir, lv.control = list(num.lv = 4), family = "negative.binomial", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 30, seed = 123))
-lornosite <- boral(y = hmscYelor, X = covXlor, lv.control = list(num.lv = 4), family = "negative.binomial", save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 1000, n.iteration = 4000, n.thin = 30, seed = 123)) #start 9:05, end 9:15
 
+#Testing diffrent numbers of latent variables
+mod.mef9lv2<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 2), family = c(rep("normal",414),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.mef9lv2 <- get.residual.cor(mod.mef9lv2) 
+mod.mef9lv3<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 3), family = c(rep("normal",414),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.mef9lv3 <- get.residual.cor(mod.mef9lv3) 
+mod.mef9lv4<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 4), family = c(rep("normal",414),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.mef9lv4 <- get.residual.cor(mod.mef9lv4) 
+mod.mef9lv5<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 5), family = c(rep("normal",414),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.mef9lv5 <- get.residual.cor(mod.mef9lv5) 
+mod.mef9lv6<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 6), family = c(rep("normal",414),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+rescor.mef9lv6 <- get.residual.cor(mod.mef9lv6) 
 
-#Calculate residual correlation matrix
-#Using shorter chains (see above comment), takes about 11 min to fit, start 3:29, end 3:40
-rescor.lof <- get.residual.cor(mod.lof) 
-rescor.hi <- get.residual.cor(mod.hi)
+mod.mef9lv2$ics[1]
+mod.mef9lv3$ics[1]
+mod.mef9lv4$ics[1]
+mod.mef9lv5$ics[1]
+mod.mef9lv6$ics[1]
+i<-1
+plot(2:6,c(mod.mef9lv2$ics[i],
+           mod.mef9lv3$ics[i],
+           mod.mef9lv4$ics[i],
+           mod.mef9lv5$ics[i],
+           mod.mef9lv6$ics[i]),type = "b")
+
+dic2<-get.dic(mod.mef9lv2)
+#notes: the more latent variables you add, the fewer significant interactions you have. ex: with 2 latent variables there are 233 taxa with 2440 interactions, and with 4 latent variables there are 214 taxa and 5618 interactions. I think this is because with 4 latent variables you are giving the model more "space" or "dimentions" for the taxa to sort out, so there are fewer significant correlations among taxa. Whe I did this in MovingUphill3, I'm pretty sure the model with 4 latent varialbe had lowest DIC which is why I chose it. Here the model with 2 latent variables has lowest DIC. DIC is suspect though in these models and boral is actually not updating/supporting these functions anymore. I think I will stay with 4 latent variables because I have so many species and I think using only 2 latent variables actually gives spurious significant interactions
+
 
 
 #Use modified function below to get 90% CI
@@ -348,70 +539,94 @@ rescor.hi <- get.residual.cor(mod.hi)
 
 ##### Look at results and check convergence/fit #####
 
-#Model fit
-mod.lo$ics[1]
-fit.melv3occ9exp4$ics[1]
-fit.melv4occ9exp4$ics[1]
-fit.melv5occ9exp4$ics[1]
-fit.melv6occ9exp4$ics[1]
-i<-1
-plot(2:6,c(fit.melv2occ9exp4$ics[i],
-           fit.melv3occ9exp4$ics[i],
-           fit.melv4occ9exp4$ics[i],
-           fit.melv5occ9exp4$ics[i],
-           fit.melv6occ9exp4$ics[i]),type = "b")
+#Model fit, information criteria
+mod.lo11flv3$ics
+#from when I tested the effect of different numbers of latent variables
 
-
-summary(mod.lo) # To look at estimated parameter values
+summary(mod.lo11flv3) # To look at estimated parameter values
 mod.lo$hpdintervals # 95% credible intervals for model parameters.
-
-#check information criteria
-fit.lolv4occ10exp4$ics
 
 #Check convergence
 #Geweke diagnostic - a z test testing whether the first 10% and the last 50% are diffrent (i think those are the fractions, doesn't really matter exactly), if it is significant, then the means are different and it didn't converge
-plot(get.mcmcsamples(mod.lo)[,1])
-plot(get.mcmcsamples(mod.lo)[,2])
+plot(get.mcmcsamples(mod.lo11flv3)[,1])
+plot(get.mcmcsamples(mod.lo11flv3)[,2])
 
 #the order is effect of snowdepth for each of the 600 species, then effect of TC, then pH, then moisture 
-mcmchi<-get.mcmcsamples(mod.lo)
+mcmchi<-get.mcmcsamples(mod.lo11flv3)
 dim(mcmchi)
 colnames(mcmchi)[2500:3000]
 mcmchi[1:10,1:5]
 
 #TRUE means these did not converge
-gew.pvals <- 2*pnorm(abs(unlist(mod.lo$geweke.diag[[1]])), lower.tail = FALSE)
+gew.pvals <- 2*pnorm(abs(unlist(mod.lo11flv3$geweke.diag[[1]])), lower.tail = FALSE)
 length(gew.pvals)
 gew.pvals[1:5]
 gew.pvals[which(gew.pvals<.05)] #technically these did not converge, however, the trace plots look fine to me
 p.adjust(gew.pvals, method = "holm")
 
-mod.lo$geweke.diag
-lornosite$geweke.diag
-hirnosite$geweke.diag
-lonosite$geweke.diag 
-hinosite$geweke.diag 
+mod.lo11flv3$geweke.diag
+mod.me11flv3$geweke.diag
+mod.hi11flv3$geweke.diag
+mod.lo11flv3$geweke.diag$prop.exceed
+mod.me11flv3$geweke.diag$prop.exceed
+mod.hi11flv3$geweke.diag$prop.exceed
 
 #example of one that did not converge
 #(1st species) N6f914ead2160e51670d3dc70c25e107b for snowdepth did not converge, but looking at the trace plot, it seems fine
 #geweke diagnostic
-fit.hilv4occ9exp4f$geweke.diag$geweke.diag$X.coefs[1:5,]
+mod.lo11flv3$geweke.diag$geweke.diag$lv.coefs[1:5,]
 #trace plot (it is the very first parameter)
-plot(get.mcmcsamples(fit.hilv4occ9exp4f)[,1])
+plot(get.mcmcsamples(mod.lo11flv3)[,3])
 #mean of the mcmc chain to make sure I'm looking at the right parameter
 mean(get.mcmcsamples(fit.hilv4occ9exp4f)[,1]) #mean is -1.710607
-#mean of the extractd model coefficients (to mak sure I'm looking at the right parameter)
+#mean of the extracted model coefficients (to make sure I'm looking at the right parameter)
 fit.hilv4occ9exp4f$X.coefs.mean  #-1.710607072, yes checks
 
 
 
 ##### Percent covariation explained by env #####
+
 #One approach to quantify how much of the species co-occurrence is explained by covariates (that is, how well the predictor variables describe the species assemblage) is through differences in the trace of the estimated residual covariance matrix induced by the latent variables (Warton et al. 2015). From the above code, this can be obtained as rescors$trace. For the spider data set, when we compared a pure latent variable model (similar to the equation 1 but without site effects) to the correlated response model, the trace decreased from 178.92 to 107.92. This implies that environmental covariates accounted for approximately 40% of the covariation between species.
-(107.92-178.92)/178.92
+#The trace is interpreted as the amount of covariation explained by the latent variables. it is a random variable so will be different from run to run based on mcmc
+(178.92-107.92)/178.92
 
 #Need to fit a model with only latent variables
-rescor.lolv4occ9exp4f$trace
-rescor.lolv4occ9exp0f$trace
+rescor.hi9fixed0$trace #expected to be higher than the model below (but it's not)
+rescor.hi9$trace
+(rescor.hi9$trace-rescor.hi9fixed0$trace)/rescor.hi9$trace*100
+#this didn't work, not sure why
+
+
+#### Percent variation explained by environment ####
+#I don't konw how useful this is (b/c it is not R2 just partitioning the explained variation) - the results suggest that the vast majority of the variance is explained by the latent variables compared to the environment.  
+varparthi<-calc.varpart(mod.mef9lv4)#,groupX=c(1,2,3,4,5)
+varparthi$varpart.X[1:10]
+varparthi$varpart.lv[1:10]
+hist(varparthi$varpart.X)
+mean(varparthi$varpart.X)
+
+varparthi2<-calc.varpart(mod.hi9)
+varparthi2$varpart.X[1:10]
+varparthi2$varpart.lv[1:10]
+
+hist(varparthi2$varpart.X)
+mean(varparthi2$varpart.X)
+
+#The above varpart is the contribution of fixed vs latent variables to explained variation, it is not an R2.
+#I want to also try to fit some simple linear models to see how much environment matters to some of the species.
+hmscXhi2
+hmscYhi4
+
+temp<-vector(length=396)
+for (i in 1:396){
+  mhi<-lm(hmscYhi4[,i]~hmscXhi2)
+  temp[i]<-summary(mhi)$adj.r.squared
+}
+mean(temp)
+
+mhi<-lm(hmscYhi4[,7]~hmscXhi2)
+summary(mhi)
+hist(resid(mhi))
 
 
 
@@ -431,31 +646,37 @@ cbind(fit.lolv4occ10exp4$lv.coefs.mean,fit.lolv4occ10exp4$X.coefs.mean)
 fit.hilv4occ9exp4f$X.coefs.mean
 
 ##Dunn-Smyth residual plots to check model assumption, outliers etc. The first plot should not have a funnel
-plot(mod.lo)
-plot(fit.melv4occ9exp4f)
-plot(fit.hilv4occ9exp4f)
-plot(lonosite)
-plot(hinosite)
+plot(mod.lo11flv3)
+plot(mod.me11flv3)
+plot(mod.hi11flv3)
+plot(mod.hi9pois)
+plot(mod.hi9)
+
+lof.resid<-ds.residuals(mod.lo11flv3)
+str(lof.resid)
+hist(lof.resid$residuals[,100])
+
+mef.resid<-ds.residuals(mod.me11flv3)
+str(mef.resid)
+hist(mef.resid$residuals[,100])
+
+hif.resid<-ds.residuals(mod.hi11flv3)
+dim(hif.resid$residuals)
+hist(hif.resid$residuals[,10])
 
 ## Residual ordination plot of the sites (please see Figure 2b in the main text for relevant explanation)
 ## Please note that boral currently does not automatically produce biplots, although species loadings can be obtained from fit.lvm$lv.coefs.median[,2:3]
-lvsplot(fit.lolv4occ10exp4)
+lvsplot(mod.mef9lv4)
 
 
 
 ##### Extract number of significant correlations #####
 
-(length(which(rescor.lo$sig.correlaton!=0))-dim(rescor.lo$sig.correlaton)[1])/2
-(length(which(rescor.hi$sig.correlaton!=0))-dim(rescor.hi$sig.correlaton)[1])/2
-(length(which(rescor.melv5occ9exp4$sig.correlaton!=0))-dim(rescor.melv5occ9exp4$sig.correlaton)[1])/2
+(length(which(rescor.lo11flv3$sig.correlaton!=0))-dim(rescor.lo11flv3$sig.correlaton)[1])/2
+(length(which(rescor.me11flv3$sig.correlaton!=0))-dim(rescor.me11flv3$sig.correlaton)[1])/2
+(length(which(rescor.hi11flv3$sig.correlaton!=0))-dim(rescor.hi11flv3$sig.correlaton)[1])/2
 
-(length(which(rescor.lolv4occ9exp4f$sig.correlaton!=0))-dim(rescor.lolv4occ9exp4f$sig.correlaton)[1])/2
-(length(which(rescor.melv4occ9exp4f$sig.correlaton!=0))-dim(rescor.melv4occ9exp4f$sig.correlaton)[1])/2
-(length(which(rescor.hilv4occ9exp4f$sig.correlaton!=0))-dim(rescor.hilv4occ9exp4f$sig.correlaton)[1])/2
-(length(which(rescor.hir$sig.correlaton!=0))-dim(rescor.hir$sig.correlaton)[1])/2
-
-#strange - using more mcmc iterations changs how many significant interactions there are (ex: lo: 3000 iter - 3398 interactions, 30000 iter - 1806 interactions). the only way I can explain this is that thre is more error in th paramter estimates with the short chain (i.e. th mixing is wider and the density histogram is wider), thus if you are more confident in th location of the species in ordination space, thn the locations will not overlap as much, and you will say that thy are less correlated.
-
+#The analysis in MovingUpHill3 suggested that more mcmc iterations meant fewer significant interactions, but I'm not finding that to matter this time.
 
 ###### Use corrplot package to plot residual correlations between species #####
 
@@ -504,7 +725,7 @@ labelsall$group2<-factor(labelsall$group2,levels=c("HeterotrophicBacteria","Phot
 pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/Figs/legend2.pdf")
 plot(c(1,1),c(1,1))
 #legend("topright",c("Bacteria","Small Eukaryota","Mesofauna","Fungi","Plants"),pt.bg=c("#7879BC","#94BA3C","#ff9c34","#F6EC32","#E95275"),bty="n",pch=21,cex=1.4)
-legend("topright",c("Heterotrophic bacteria","Photosynthetic bacteria","Chemoautotophic bacteria","Unknown bacteria","Heterotrophic Eukaryota","Photosynthetic Eukaryota","UnknownEukaryota","Mesofauna","Fungi","Plants"),pt.bg=c("#7879BC","#94BA3C","#6295cd","gray70","#673482","#466D24","gray50","#ff9c34","#F6EC32","#E95275"),bty="n",pch=21,cex=1.4)
+legend("topright",c("Heterotrophic bacteria","Photosynthetic bacteria","Chemoautotrophic bacteria","Unknown bacteria","Heterotrophic Eukaryota","Photosynthetic Eukaryota","UnknownEukaryota","Mesofauna","Fungi","Plants"),pt.bg=c("#7879BC","#94BA3C","#6295cd","gray70","#673482","#466D24","gray50","#ff9c34","#F6EC32","#E95275"),bty="n",pch=21,cex=1.4)
 legend("topleft",c("Positive","Negative"),col=c("#ce4d42","#687dcb"),lty=1,bty="n",cex=1.4)
 #legend("top",as.character(1:10),col=c("#111110","#660011","#A80013","#118877","#4c3d3e","#118877","#7f783f","#aa8888","#aabbdd","#ff99a4"),lty=1,lwd=3)
 dev.off()
@@ -513,11 +734,11 @@ dev.off()
 
 
 
-##### lo #####
+##### Network diagrams for lo #####
 #creating sparse matrix
-colMatlo<-rescor.lo$sig.correlaton
-colMatlo[which(rescor.lo$sig.correlaton>0)]<-1
-colMatlo[which(rescor.lo$sig.correlaton<0)]<- -1
+colMatlo<-rescor.lo11flv3r$sig.correlaton
+colMatlo[which(rescor.lo11flv3r$sig.correlaton>0)]<-1
+colMatlo[which(rescor.lo11flv3r$sig.correlaton<0)]<- -1
 
 # colMatlo<-rescor.lolv4occ9exp4nosite$sig.correlaton
 # colMatlo[which(colMatlo>.85)]<-1
@@ -582,20 +803,16 @@ plot(graph3,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedge
 
 
 
-##### me #####
+##### Network diagrams for me #####
 #creating sparse matrix
-colMatme<-rescor.melv4occ9exp4f$sig.correlaton
-colMatme[which(rescor.melv4occ9exp4f$sig.correlaton>0)]<-1
-colMatme[which(rescor.melv4occ9exp4f$sig.correlaton<0)]<- -1
+colMatme<-rescor.me11flv3r$sig.correlaton
+colMatme[which(rescor.me11flv3r$sig.correlaton>0)]<-1
+colMatme[which(rescor.me11flv3r$sig.correlaton<0)]<- -1
 
 # colMatme<-rescor.melv4occ9exp4f$sig.correlaton
 # colMatme[which(colMatme>.6)]<-1
 # colMatme[which(colMatme<(-.6))]<- -1
 # colMatme[which(colMatme<.6&colMatme>(-.6))]<-0
-
-colMatme<-rescor.melv4occ9exp4nosite$sig.correlaton
-colMatme[which(rescor.melv4occ9exp4nosite$sig.correlaton>0)]<-1
-colMatme[which(rescor.melv4occ9exp4nosite$sig.correlaton<0)]<- -1
 
 graphme1<-graph_from_adjacency_matrix(colMatme, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
 myedgelistme<-data.frame(as_edgelist(graphme1),weight=E(graphme1)$weight) #just the edges
@@ -610,30 +827,38 @@ graphme2
 verticesgraphme<-data.frame(otu=rownames(as.matrix(V(graphme2))))
 colorgraphme<-merge(verticesgraphme,labelsall,"otu",all.y=F,all.x=F,sort=F)
 
-##use colorgraphlo$group2 for ordering, if ther are ties it leaves them in thir original order, thus is still preserves some of the ordering that makes the lines look nice
+##use colorgraphlo$group2 for ordering, if there are ties it leaves them in their original order, thus is still preserves some of the ordering that makes the lines look nice
 orderme<-order(colorgraphme$group2)
 #orderme<-order(verticesgraphme$otu)
 graphme2$layout <- layout_in_circle(graphme2,order=orderme)
 #graphme2$layout <- layout_in_circle
 
-pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/Figs/networkmecircleposblue.pdf") 
-plot(graphme2,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelistme$weight==1,"#ce4d42","#687dcb"),vertex.color=colorgraphme$color,edge.width=.7)#,layout=l3
+#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/Figs/networkmecircleposblue.pdf") 
+#plot(graphme2,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelistme$weight==1,"#ce4d42","#687dcb"),vertex.color=colorgraphme$color,edge.width=.7)#,layout=l3
 plot(graphme2,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelistme$weight==1,"#687dcb","#ce4d42"),vertex.color=colorgraphme$color,edge.width=.7)#,layout=l3
-dev.off()
+#dev.off()
+
+temp<-colorgraphme[which(colorgraphme$group=="Plant"),"otu"]
+temp2<-myedgelistme[which(myedgelistme$X1%in%temp|myedgelistme$X2%in%temp),]
+temp2
+dim(temp2)
 
 temp<-colorgraphme[which(colorgraphme$group=="Mesofauna"),"otu"]
 temp2<-myedgelistme[which(myedgelistme$X1%in%temp|myedgelistme$X2%in%temp),]
+temp2
 dim(temp2)
 
+colorgraphme[which(colorgraphme$otu=="N91502b60bb4cd795ba70dd05ed89e805"),]
+colorgraphme[which(colorgraphme$otu=="Bdc4a7fab972ac91dd37631d279420a08"),]
 
 
-##### hi #####
+##### Network diagrams for hi #####
 #creating sparse matrix
-colMathi<-rescor.hi$sig.correlaton
-colMathi[which(rescor.hi$sig.correlaton>0)]<-1
-colMathi[which(rescor.hi$sig.correlaton<0)]<- -1
+colMathi<-rescor.hi11flv3$sig.correlaton
+colMathi[which(rescor.hi11flv3$sig.correlaton>0)]<-1
+colMathi[which(rescor.hi11flv3$sig.correlaton<0)]<- -1
 
-# colMathi<-rescor.hilv4occ9exp4f$sig.correlaton
+# colMathi<-rescor.hi9$correlation
 # colMathi[which(colMathi>.5)]<-1
 # colMathi[which(colMathi<(-.5))]<- -1
 # colMathi[which(colMathi<.5&colMathi>(-.5))]<-0
@@ -664,9 +889,11 @@ plot(graphhi2,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myed
 #dev.off()
 
 colorgraphhi[which(colorgraphhi$group=="Mesofauna"),]
+colorgraphhi[which(colorgraphhi$group=="Plant"),]
 
-temp<-colorgraphhi[which(colorgraphhi$group=="Mesofauna"),"otu"]
+temp<-colorgraphhi[which(colorgraphhi$group=="Plant"),"otu"]
 temp2<-myedgelisthi[which(myedgelisthi$X1%in%temp|myedgelisthi$X2%in%temp),]
+temp2
 dim(temp2)
 
 #Creating a subgraph
@@ -675,63 +902,6 @@ myedgelisthi2<-myedgelisthi[which(myedgelisthi[,"X1"]%in%colorgraphhi2$otu|myedg
 graph3<-subgraph.edges(graphhi2, eids=which(myedgelisthi2[,"X1"]%in%colorgraphhi2$otu|myedgelisthi2[,"X2"]%in%colorgraphhi2$otu), delete.vertices = F)
 plot(graph3,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelisthi2$weight==1,"#ce4d42","#687dcb"),vertex.color=colorgraphhi$color)#,rescale=F,xlim=c(-1,1),ylim=c(-1,1)
 
-
-
-######random graphs#####
-#creating sparse matrix
-
-colMathi<-rescor.hirnosite$sig.correlaton
-colMathi[which(rescor.hirnosite$sig.correlaton>0)]<-1
-colMathi[which(rescor.hirnosite$sig.correlaton<0)]<- -1
-
-colMathi<-rescor.lornosite$sig.correlaton
-colMathi[which(rescor.lornosite$sig.correlaton>0)]<-1
-colMathi[which(rescor.lornosite$sig.correlaton<0)]<- -1
-
-colMathi<-rescor.lonosite$sig.correlaton
-colMathi[which(rescor.lonosite$sig.correlaton>0)]<-1
-colMathi[which(rescor.lonosite$sig.correlaton<0)]<- -1
-
-colMathi<-rescor.hinosite$sig.correlaton
-colMathi[which(rescor.hinosite$sig.correlaton>0)]<-1
-colMathi[which(rescor.hinosite$sig.correlaton<0)]<- -1
-
-graphhi1<-graph_from_adjacency_matrix(colMathi, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
-myedgelisthi<-data.frame(as_edgelist(graphhi1),weight=E(graphhi1)$weight) #just the edges
-
-length(which(myedgelisthi$weight==1))
-length(which(myedgelisthi$weight==-1))
-length(which(myedgelisthi$weight==1))/(length(which(myedgelisthi$weight==1))+length(which(myedgelisthi$weight==-1)))
-
-graphhi2<-graph.edgelist(as.matrix(myedgelisthi[,1:2]),directed=FALSE)
-graphhi2
-
-verticesgraphhi<-data.frame(otu=rownames(as.matrix(V(graphhi2))))
-colorgraphhi<-merge(verticesgraphhi,labelsall,"otu",all.y=F,all.x=F,sort=F)
-
-#order starts at 3:00 and goes counterclockwise
-##use colorgraphlo$group2 for ordering, if ther are ties it leaves them in thir original order, thus is still preserves some of the ordering that makes the lines look nice
-orderhi<-order(colorgraphhi$group2)
-#orderhi<-order(verticesgraphhi$otu)
-graphhi2$layout <- layout_in_circle(graphhi2,order=orderhi)
-#graphhi2$layout <- layout_in_circle
-
-#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/Figs/networkhicircleposblue.pdf") 
-#plot(graphhi2,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelisthi$weight==1,"#ce4d42","#687dcb"),vertex.color=colorgraphhi$color,edge.width=.7)#,layout=l3  
-plot(graphhi2,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelisthi$weight==1,"#687dcb","#ce4d42"),vertex.color=colorgraphhi$color,edge.width=.7)#,layout=l3  
-#dev.off()
-
-colorgraphhi[which(colorgraphhi$group=="Mesofauna"),]
-
-temp<-colorgraphhi[which(colorgraphhi$group=="Mesofauna"),"otu"]
-temp2<-myedgelisthi[which(myedgelisthi$X1%in%temp|myedgelisthi$X2%in%temp),]
-dim(temp2)
-
-#Creating a subgraph
-colorgraphhi2<-colorgraphhi[which(colorgraphhi$group2=="Mesofauna"),]
-myedgelisthi2<-myedgelisthi[which(myedgelisthi[,"X1"]%in%colorgraphhi2$otu|myedgelisthi[,"X2"]%in%colorgraphhi2$otu),]
-graph3<-subgraph.edges(graphhi2, eids=which(myedgelisthi2[,"X1"]%in%colorgraphhi2$otu|myedgelisthi2[,"X2"]%in%colorgraphhi2$otu), delete.vertices = F)
-plot(graph3,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedgelisthi2$weight==1,"#ce4d42","#687dcb"),vertex.color=colorgraphhi$color)#,rescale=F,xlim=c(-1,1),ylim=c(-1,1)
 
 
 
@@ -768,28 +938,38 @@ Nb85db42310af5ddb08354eef2427cc8e predator nematode
 N91502b60bb4cd795ba70dd05ed89e805 rotifer, one neg relationship with bacteroidetes
 Nf607691c8f991641954b20294b81a9b7 rotifer, 3 neg relationship with heterotrophic bacteria, 1 neg with fungi
 
-temp<-colorgraphme[which(colorgraphme$group=="Mesofauna"),"otu"]
+
+
+temp<-colorgraphme[which(colorgraphme$group=="Plant"),"otu"]
 temp2<-myedgelistme[which(myedgelistme$X1%in%temp|myedgelistme$X2%in%temp),]
 dim(temp2)
-colorgraphme[which(colorgraphme$group=="Mesofauna"),]
+temp2
+#colorgraphme[which(colorgraphme$group=="Mesofauna"),]
+colorgraphme[(colorgraphme$otu=="B48d16e38cb3b5bb89e9e5c21d460c6b6"),]
 
-temp<-colorgraphhi[which(colorgraphhi$group=="Mesofauna"),"otu"]
+
+
+temp<-colorgraphhi[which(colorgraphhi$group=="Plant"),"otu"]
 temp2<-myedgelisthi[which(myedgelisthi$X1%in%temp|myedgelisthi$X2%in%temp),]
 dim(temp2)
-colorgraphhi[which(colorgraphhi$group=="Mesofauna"),]
+temp2
+colorgraphhi[which(colorgraphhi$group=="Plant"),]
 
-temp<-colorgraphhi[which(colorgraphhi$otu=="N6f914ead2160e51670d3dc70c25e107b"),"otu"]
-temp2<-myedgelisthi[which(myedgelisthi$X1%in%temp|myedgelisthi$X2%in%temp),]
-colorgraphhi[which(colorgraphhi$otu%in%temp2$X2),]
+colorgraphhi[(colorgraphhi$otu=="B2d66d59115e5f8c6d716f72f4fc26f23"),]
+#temp<-colorgraphhi[which(colorgraphhi$otu=="B2d66d59115e5f8c6d716f72f4fc26f23"),"otu"]
+#temp2<-myedgelisthi[which(myedgelisthi$X1%in%temp|myedgelisthi$X2%in%temp),]
+#colorgraphhi[which(colorgraphhi$otu%in%temp2$X2),]
 
-N6f914ead2160e51670d3dc70c25e107b not well identified probably fungal feeder, Aphelenchoides fragariae, also positively correlated with 4 fungi
-Nece270a38485359f4d1e2a33f964a983 Nagelus obscurus, plant parasite
-     Leptosphaeria is the fungus it is positively correlated with, which is a plant pathogen
-N1b65f0ff041f3f5b37e4dcb6607ea61b Pungentus sp, omnivore, positively correlated with two bacteria
+B2d66d59115e5f8c6d716f72f4fc26f23: TACGGAGGGTGCAAGCGTTATCCGGATTCACTGGGTTTAAAGGGTGCGTAGGCGGGTAAGTAAGTCCGTGGTGAAATCTCTGAGCTTAACTCAGAAACTGCCGTGGATACTATTTGCCTTGAATATTGTGGAGGTGAGCGGAATATGTCATGTAGCGGTGAAATGCTTAGATATGACATAGAACACCAATTGCGAAGGCAGCTCACTACACAATCATTGACGCTGAGGCACGAAAGCGTGGGGATCAAACAGG
+
+# N6f914ead2160e51670d3dc70c25e107b not well identified probably fungal feeder, Aphelenchoides fragariae, also positively correlated with 4 fungi
+# Nece270a38485359f4d1e2a33f964a983 Nagelus obscurus, plant parasite
+#      Leptosphaeria is the fungus it is positively correlated with, which is a plant pathogen
+# N1b65f0ff041f3f5b37e4dcb6607ea61b Pungentus sp, omnivore, positively correlated with two bacteria
 
 
 #get sequences for all the mesofauna so Dorota can check them
-grep -C 2 "bfe4b462f2c88679387207f098ee6220" dna-sequences.fasta
+grep -C 2 "2d66d59115e5f8c6d716f72f4fc26f23" dna-sequences.fasta
 
 
 #photosynthetic microbes
@@ -1362,4 +1542,46 @@ hmscYPlant<-hmscY[,7209:7262]
 
 hmscY2<-cbind(hmscYN2,hmscYS2,hmscYBac2,hmscYITS2,hmscYPlant)
 hmscY2[1:5,1:5]
+
+
+
+
+##### to remove all the many trial files to make env smaller #####
+
+rm(list=setdiff(ls(), c("labelfile",
+                        "richEukS2",
+                        "richEukN2",
+                        "richBac2",
+                        "richITS2",
+                        "datEukS5otu",
+                        "datEukS5cotu",
+                        "datEukN5otu",
+                        "datEukN5cotu",
+                        "datBacS5otu",
+                        "datBacS5cotu",
+                        "datITSS5otu",
+                        "datITSS5cotu",
+                        "datEukS5otu3",
+                        "datEukS5cotu3",
+                        "datEukN5otu3",
+                        "datEukN5cotu3",
+                        "datBacS5otu3",
+                        "datBacS5cotu3",
+                        "datITSS5otu3",
+                        "datITSS5cotu3",
+                        "datEukS5k2",
+                        "datEukN5k2",
+                        "datBacS5k2",
+                        "datITSS5k2",
+                        "plantcomp",
+                        "plantcomp2",
+                        "biogeo6",
+                        "comm.bio",
+                        "mod.lo11flv3", 
+                        "mod.me11flv3", 
+                        "mod.hi11flv3",
+                        "rescor.lo11flv3",
+                        "rescor.me11flv3",
+                        "rescor.hi11flv3")))
+
 
