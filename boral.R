@@ -115,21 +115,6 @@ hmscYlo2Bac<-hmscYlo2[,1248:7101]
 hmscYlo2ITS<-hmscYlo2[,7102:8426]
 hmscYlo2Plant<-hmscYlo2[,8427:8442]
 
-#randomize if you want, this preserves species occurrence frequency and sample species richness
-hmscYlo2Nr<-randomizeMatrix(hmscYlo2N, null.model="independentswap",iterations=30000)
-hmscYlo2Sr<-randomizeMatrix(hmscYlo2S, null.model="independentswap",iterations=500000)
-hmscYlo2Bacr<-randomizeMatrix(hmscYlo2Bac, null.model="independentswap",iterations=5000000)
-hmscYlo2ITSr<-randomizeMatrix(hmscYlo2ITS, null.model="independentswap",iterations=500000)
-hmscYlo2Plantr<-randomizeMatrix(hmscYlo2Plant, null.model="independentswap",iterations=30000)
-#replace so I can carry on with same code
-hmscYlo2N<-hmscYlo2Nr
-hmscYlo2S<-hmscYlo2Sr
-hmscYlo2Bac<-hmscYlo2Bacr
-hmscYlo2ITS<-hmscYlo2ITSr
-hmscYlo2Plant<-hmscYlo2Plantr
-hmscYlo2<-cbind(hmscYlo2N,hmscYlo2S,hmscYlo2Bac,hmscYlo2ITS,hmscYlo2Plant)
-#
-
 #Impute zeros
 hmscYlo2N2 <- cmultRepl(hmscYlo2N,label=0, method="CZM")
 hmscYlo2S2 <- cmultRepl(hmscYlo2S,label=0, method="CZM")
@@ -184,24 +169,9 @@ hmscYme2Bac<-hmscYme2[,1466:9375]
 hmscYme2ITS<-hmscYme2[,9376:10937]
 hmscYme2Plant<-hmscYme2[,10938:10971]
 
-#randomize if you want, this preserves species occurrence frequency and sample species richness
-hmscYme2Nr<-randomizeMatrix(hmscYme2N, null.model="independentswap",iterations=30000)
-hmscYme2Sr<-randomizeMatrix(hmscYme2S, null.model="independentswap",iterations=500000)
-hmscYme2Bacr<-randomizeMatrix(hmscYme2Bac, null.model="independentswap",iterations=5000000)
-hmscYme2ITSr<-randomizeMatrix(hmscYme2ITS, null.model="independentswap",iterations=500000)
-hmscYme2Plantr<-randomizeMatrix(hmscYme2Plant, null.model="independentswap",iterations=30000)
-#replace so I can carry on with same code
-hmscYme2N<-hmscYme2Nr
-hmscYme2S<-hmscYme2Sr
-hmscYme2Bac<-hmscYme2Bacr
-hmscYme2ITS<-hmscYme2ITSr
-hmscYme2Plant<-hmscYme2Plantr
-hmscYme2<-cbind(hmscYme2N,hmscYme2S,hmscYme2Bac,hmscYme2ITS,hmscYme2Plant)
-#
-
 #Impute zeros
 hmscYme2N2 <- cmultRepl(hmscYme2N,label=0, method="CZM")
-hmscYme2S2 <- cmultRepl(hmscYme2S,label=0, method="CZM");min(hmscYme2S2)#this was giving negative numbers so I did the randomization above a few times and then it was ok
+hmscYme2S2 <- cmultRepl(hmscYme2S,label=0, method="CZM")
 hmscYme2Bac2 <- cmultRepl(hmscYme2Bac,label=0, method="CZM")
 hmscYme2ITS2 <- cmultRepl(hmscYme2ITS,label=0, method="CZM")
 
@@ -245,30 +215,11 @@ hmscYhi2Bac<-hmscYhi2[,2071:9952]
 hmscYhi2ITS<-hmscYhi2[,9953:11893]
 hmscYhi2Plant<-hmscYhi2[,11894:11942]
 
-#randomize if you want, this preserves species occurrence frequency and sample species richness
-hmscYhi2Nr<-randomizeMatrix(hmscYhi2N, null.model="independentswap",iterations=30000)
-hmscYhi2Sr<-randomizeMatrix(hmscYhi2S, null.model="independentswap",iterations=800000)
-hmscYhi2Bacr<-randomizeMatrix(hmscYhi2Bac, null.model="independentswap",iterations=6000000)
-hmscYhi2ITSr<-randomizeMatrix(hmscYhi2ITS, null.model="independentswap",iterations=800000)
-hmscYhi2Plantr<-randomizeMatrix(hmscYhi2Plant, null.model="independentswap",iterations=30000)
-#replace so I can carry on with same code
-hmscYhi2N<-hmscYhi2Nr
-hmscYhi2S<-hmscYhi2Sr
-hmscYhi2Bac<-hmscYhi2Bacr
-hmscYhi2ITS<-hmscYhi2ITSr
-hmscYhi2Plant<-hmscYhi2Plantr
-hmscYhi2<-cbind(hmscYhi2N,hmscYhi2S,hmscYhi2Bac,hmscYhi2ITS,hmscYhi2Plant)
-#
-
 #Impute zeros
 hmscYhi2N2 <- cmultRepl(hmscYhi2N,label=0, method="CZM")
-hmscYhi2S2 <- cmultRepl(hmscYhi2S,label=0, method="CZM");min(hmscYhi2S2)
-sort(as.matrix(hmscYhi2S2))
-hmscYhi2S2[hmscYhi2S2<=0]<-0.0001434328
+hmscYhi2S2 <- cmultRepl(hmscYhi2S,label=0, method="CZM")
 hmscYhi2Bac2 <- cmultRepl(hmscYhi2Bac,label=0, method="CZM")
-hmscYhi2ITS2 <- cmultRepl(hmscYhi2ITS,label=0, method="CZM");min(hmscYhi2ITS2)
-sort(as.matrix(hmscYhi2ITS2))
-hmscYhi2ITS2[hmscYhi2ITS2<=0]<-7.780918e-05
+hmscYhi2ITS2 <- cmultRepl(hmscYhi2ITS,label=0, method="CZM")
 
 #Calculate clr
 hmscYhi2N3 <- t(apply(hmscYhi2N2, 1, function(x){log(x) - mean(log(x))}))
@@ -334,13 +285,6 @@ plot(hmscYlo2sub[,117],hmscYlo4[,117])
 hmscXlo2<-scale(hmscXlo)
 hmscXme2<-scale(hmscXme)
 hmscXhi2<-scale(hmscXhi)
-
-
-#### do randomization #####
-#need to remove plants first. this doesn't work on clr only on abundance data
-#hmscYlor<-randomizeMatrix(hmscYlo4[,1:305], null.model="independentswap",iterations=30000) #I upped to 30000 from 1000 bc it seems like things weren't getting randomized
-#######
-
 
 #Make them matrices
 hmscYlo5<-as.matrix(hmscYlo4)
@@ -491,16 +435,6 @@ rescor.me12flv3 <- get.residual.cor(mod.me12flv3)
 #mod.hi12flv3<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 3), family = c(rep("normal",214),rep("negative.binomial",4)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
 rescor.hi12flv3 <- get.residual.cor(mod.hi12flv3) 
 
-#Randomized matrices
-mod.lo11flv3r<- boral(y = hmscYlo5, X = hmscXlo3, lv.control = list(num.lv = 3), family = c(rep("normal",305),rep("negative.binomial",1)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
-rescor.lo11flv3r <- get.residual.cor(mod.lo11flv3r) 
-
-mod.me11flv3r<- boral(y = hmscYme5, X = hmscXme3, lv.control = list(num.lv = 3), family = c(rep("normal",298),rep("negative.binomial",3)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
-rescor.me11flv3r <- get.residual.cor(mod.me11flv3r) 
-
-mod.hi11flv3r<- boral(y = hmscYhi5, X = hmscXhi3, lv.control = list(num.lv = 3), family = c(rep("normal",265),rep("negative.binomial",8)), save.model = TRUE, calc.ics = T, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
-rescor.hi11flv3r <- get.residual.cor(mod.hi11flv3r) 
-save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis2.Rdata")  # 
 
 
 #Testing diffrent numbers of latent variables
@@ -805,7 +739,7 @@ plot(graph3,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedge
 
 ##### Network diagrams for me #####
 #creating sparse matrix
-colMatme<-rescor.me11flv3r$sig.correlaton
+colMatme<-rescor.me9fixed0$sig.correlaton
 colMatme[which(rescor.me11flv3r$sig.correlaton>0)]<-1
 colMatme[which(rescor.me11flv3r$sig.correlaton<0)]<- -1
 
@@ -854,7 +788,7 @@ colorgraphme[which(colorgraphme$otu=="Bdc4a7fab972ac91dd37631d279420a08"),]
 
 ##### Network diagrams for hi #####
 #creating sparse matrix
-colMathi<-rescor.hi11flv3$sig.correlaton
+colMathi<-rescor.hi11flv3$sig.correlaton#rescor.hi9fixed0
 colMathi[which(rescor.hi11flv3$sig.correlaton>0)]<-1
 colMathi[which(rescor.hi11flv3$sig.correlaton<0)]<- -1
 

@@ -74,20 +74,265 @@ sort(colSums(sim2>0),decreasing = T) #
 length(which(colSums(sim2>0)>11)) 
 
 
-#taking distribution from my actual data
+#using probabs1 and probabs2 below from the neg bin distribution, jsut messing with k doesn't make higher diveristy have fewer passing cutoff
+#low diversity
+sim<-t(simCounts(samples=25,counts=1000,pi=probabs1,theta=.02,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
+mean(rowSums(sim>0))
+sort(colSums(sim>0),decreasing = T) #
+length(which(colSums(sim>0)>11)) 
+
+#high diversity
+sim2<-t(simCounts(samples=25,counts=1000,pi=probabs2,theta=.02,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
+mean(rowSums(sim2>0))
+sort(colSums(sim2>0),decreasing = T) #
+length(which(colSums(sim2>0)>11)) 
+
+
+#should probably test theta=0.0009
+
+
+
+
+###### Taking distribution from my actual data ######
 #this works...preserves the differences in richness and in how many species pass my cutoff filter
 probabslo<-templo
-simlo<-t(simCounts(samples=25,counts=1000,pi=probabslo,theta=.02,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
+simlo<-t(simCounts(samples=25,counts=2000,pi=probabslo,theta=.02,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
 mean(rowSums(simlo>0)) #mean richness
 sort(colSums(simlo>0),decreasing = T) #distribution of species frequencies
 length(which(colSums(simlo>0)>11))  #passing filter
 
 probabshi<-temphi
-simhi<-t(simCounts(samples=25,counts=1000,pi=probabshi,theta=.02,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
+simhi<-t(simCounts(samples=25,counts=2000,pi=probabshi,theta=.02,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
 mean(rowSums(simhi>0)) #mean richness
 sort(colSums(simhi>0),decreasing = T) #distribution of species frequencies
 length(which(colSums(simhi>0)>11))  #passing filter
 
+#using the default parameters just to see what happens
+simlo<-t(simMat(taxa=150, samples=25, counts=1000, distrib="dm", maxcount=100, mode=6, k=0.08, theta=0.0009, norm=F, shuffle.samples=F))
+simhi<-t(simMat(taxa=150, samples=25, counts=1000, distrib="dm", maxcount=100, mode=6, k=0.04, theta=0.0009, norm=F, shuffle.samples=F))
+
+
+
+#### initiate things ####
+#set probabilities
+probabslo<-templo
+probabshi<-temphi
+
+#generate x if you want to
+#simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
+
+#generate output dataframes
+outputlo<-data.frame(rep=rep(NA,10),richness=rep(NA,10),passcutoff=rep(NA,10),pos=rep(NA,10),neg=rep(NA,10),tot=rep(NA,10))
+outputhi<-data.frame(rep=rep(NA,10),richness=rep(NA,10),passcutoff=rep(NA,10),pos=rep(NA,10),neg=rep(NA,10),tot=rep(NA,10))
+#outputlomod<-list(NA)
+#outputlorescor<-list(NA)
+
+
+
+#lo
+for(i in 1:10){
+  set.seed(i+4)
+  #print(rnorm(1,0,1))
+  simlo<-t(simCounts(samples=25,counts=3000,pi=probabslo,theta=.02,distrib="dm",maxcount = 100))
+  outputlo[i,"richness"]<-mean(rowSums(simlo>0)) #mean richness
+  #sort(colSums(simlo>0),decreasing = T) #distribution of species frequencies
+  outputlo[i,"passcutoff"]<-length(which(colSums(simlo>0)>11))  #passing filter
+  
+  ind<-which(colSums(simlo)>0);length(ind)
+  simlo2<-simlo[,ind]#375 species
+  #impute zeros
+  simlo3 <- cmultRepl(simlo2,label=0, method="CZM")
+  #Calculate clr
+  simlo4 <- t(apply(simlo3, 1, function(x){log(x) - mean(log(x))}))
+  ind<-which(colSums(simlo2>0)>11)
+  simlo5<-simlo4[,ind]
+
+  #generate random variables for the environment
+  #simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
+  mod.lo<- boral(y = simlo5, X = NULL, lv.control = list(num.lv = 2), family = "normal", save.model = TRUE, calc.ics = F, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+  rescor.lo <- get.residual.cor(mod.lo) 
+  colMatlo<-rescor.lo$sig.correlaton
+  colMatlo[which(rescor.lo$sig.correlaton>0)]<-1
+  colMatlo[which(rescor.lo$sig.correlaton<0)]<- -1
+  
+  graphlo1<-graph_from_adjacency_matrix(colMatlo, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
+  myedgelistlo<-data.frame(as_edgelist(graphlo1),weight=E(graphlo1)$weight) #just the edges
+  
+  outputlo[i,"rep"]<-i
+  outputlo[i,"pos"]<-length(which(myedgelistlo$weight==1))
+  outputlo[i,"neg"]<-length(which(myedgelistlo$weight==-1))
+  outputlo[i,"tot"]<-length(which(myedgelistlo$weight==1))+length(which(myedgelistlo$weight==-1))
+  print(outputlo)
+}
+
+#hi
+for (j in 1:10){
+  set.seed(j+4)
+  simhi<-t(simCounts(samples=25,counts=3000,pi=probabshi,theta=.02,distrib="dm",maxcount = 100))
+  outputhi[j,"richness"]<-mean(rowSums(simhi>0)) #mean richness
+  #sort(colSums(simhi>0),decreasing = T) #distribution of species frequencies
+  outputhi[j,"passcutoff"]<-length(which(colSums(simhi>0)>11))  #passing filter
+  
+  ind<-which(colSums(simhi)>0);length(ind)
+  simhi2<-simhi[,ind]#375 species
+  #impute zeros
+  simhi3 <- cmultRepl(simhi2,label=0, method="CZM")
+  #Calculate clr
+  simhi4 <- t(apply(simhi3, 1, function(x){log(x) - mean(log(x))}))
+  ind<-which(colSums(simhi2>0)>11)
+  simhi5<-simhi4[,ind]
+  
+  #generate random variables for the environment
+  #simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
+  mod.hi<- boral(y = simhi5, X = NULL, lv.control = list(num.lv = 2), family = "normal", save.model = TRUE, calc.ics = F, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+  rescor.hi <- get.residual.cor(mod.hi) 
+  colMathi<-rescor.hi$sig.correlaton
+  colMathi[which(rescor.hi$sig.correlaton>0)]<-1
+  colMathi[which(rescor.hi$sig.correlaton<0)]<- -1
+  
+  graphhi1<-graph_from_adjacency_matrix(colMathi, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
+  myedgelisthi<-data.frame(as_edgelist(graphhi1),weight=E(graphhi1)$weight) #just the edges
+  
+  outputhi[j,"rep"]<-j
+  outputhi[j,"pos"]<-length(which(myedgelisthi$weight==1))
+  outputhi[j,"neg"]<-length(which(myedgelisthi$weight==-1))
+  outputhi[j,"tot"]<-length(which(myedgelisthi$weight==1))+length(which(myedgelisthi$weight==-1))
+  print(outputhi)
+}
+
+mean(outputlo$tot)
+std.error(outputlo$tot)
+mean(outputhi$tot)
+std.error(outputhi$tot)
+
+#1000 counts
+outputlo1<-outputlo
+outputhi1<-outputhi
+
+#2000 counts
+outputlo2<-outputlo
+outputhi2<-outputhi
+
+#3000 counts
+outputlo3<-outputlo
+outputhi3<-outputhi
+
+
+
+##### Exploring the negative binomial
+
+temp<-dnbinom(0:100, mu=2, size=0.02)
+plot(0:100, temp)
+temp<-dnbinom(0:100, mu=200, size=.02)
+points(0:100, temp, col=2)
+
+#numbers from low plots bacteria
+temp<-sort(rnbinom(10000,mu=1.36,size=.011),decreasing = T)
+hist(temp)
+sum(temp>0)
+temp2<-temp/sum(temp)
+temp2[1:100]
+
+#numbers from hi plots bacteria
+temp<-sort(rnbinom(10000,mu=1.01,size=.014),decreasing = T)
+hist(temp)
+sum(temp>0)
+temp2<-temp/sum(temp)
+temp2[1:400]
+
+
+##### Exploring my data structure #####
+
+hmscYlo2Bac
+hmscYlo2S
+
+hmscYme2Bac
+hmscYme2S
+
+hmscYhi2Bac
+hmscYhi2S
+
+
+
+dim(hmscYlo2ITS)
+colnames(hmscYlo2ITS)<-1:1325
+dim(hmscYhi2ITS)
+colnames(hmscYhi2ITS)<-1:1941
+rarefied to 1023
+
+#richness
+mean(rowSums(hmscYlo2Bac>0))
+mean(rowSums(hmscYhi2Bac>0))
+
+length(which(colSums(hmscYlo2ITS)==1))
+length(which(colSums(hmscYhi2ITS)==1))
+
+#evenness
+mean(vegan::diversity(hmscYlo2Bac)/log(specnumber(hmscYlo2Bac)))
+mean(vegan::diversity(hmscYme2Bac)/log(specnumber(hmscYme2Bac)))
+
+#more rich plots are slightly more even and have many more singletons
+
+temp<-t(hmscYlo2ITS[2,])
+sort(temp,decreasing = T)
+cbind(t(hmscYlo2ITS[1,]),t(hmscYlo2ITS[4,]))
+rowSums(hmscYlo2S)
+
+
+#take one sample in lo and hi and fit a negbin model to it and use those parameters 
+#templo
+sort(t(hmscYlo2Bac[1,]),decreasing = T)
+temp<-sort(t(hmscYlo2Bac[1,]),decreasing = T)[1:800]#800 I used 800 for my simulation runs
+hist(temp)
+templo<-temp/sum(temp)  #take this and use it as probab
+plot(temp)
+mean(temp)
+var(temp)#variance=mu + mu^2/k; k=(mu^2)/(var-mu)
+mean(temp)^2/(var(temp)-mean(temp)) #(k)
+rnbinom(n=5000,mu=1.36,size=.011)
+
+#temphi
+sort(t(hmscYhi2Bac[1,]),decreasing = T)
+temp2<-sort(t(hmscYhi2Bac[1,]),decreasing = T)[1:1500]#1500 I used 1500 for my simulation runs
+hist(temp2)
+temphi<-temp2/sum(temp2)  #take this and use it as probab
+mean(temp2)
+var(temp2)#variance=mu + mu^2/k; k=(mu^2)/(var-mu)
+mean(temp2)^2/(var(temp2)-mean(temp2)) #(k)
+rnbinom(n=5000,mu=1.01,size=.014)
+
+
+
+#useful files for looking at my data structures
+rm(list=setdiff(ls(), c("labelfile",
+                        "richEukS2",
+                        "richEukN2",
+                        "richBac2",
+                        "richITS2",
+                        "datEukS5otu",
+                        "datEukS5cotu",
+                        "datEukN5otu",
+                        "datEukN5cotu",
+                        "datBacS5otu",
+                        "datBacS5cotu",
+                        "datITSS5otu",
+                        "datITSS5cotu",
+                        "datEukS5otu3",
+                        "datEukS5cotu3",
+                        "datEukN5otu3",
+                        "datEukN5cotu3",
+                        "datBacS5otu3",
+                        "datBacS5cotu3",
+                        "datITSS5otu3",
+                        "datITSS5cotu3",
+                        "datEukS5k2",
+                        "datEukN5k2",
+                        "datBacS5k2",
+                        "datITSS5k2",
+                        "plantcomp",
+                        "plantcomp2",
+                        "comm.bio",
+                        "biogeo6")))
 
 
 
@@ -110,15 +355,15 @@ length(which(colSums(simhi>0)>11))  #passing filter
 #        4 = probabilities are sampled from a poisson distribution with lambda set to 0.5
 #        5 = probabilities are generated using broken-stick function bstick() from vegan
 #        6 = probabilities are generated with the geometric series of given evenness k
-#             k    = evenness parameter for mode 6
+#            k = evenness parameter for mode 6
 #
 # Value:
 # A taxon probability vector
 #
 ##############################################################################
 
-probabs<-
-sort(getProbabs(taxa=50,mode=7,k=10) )
+probabs1<-getProbabs(taxa=400,mode=7,k=.011);probabs1
+probabs2<-getProbabs(taxa=400,mode=7,k=.021);probabs2
 getProbabs(taxa=50,mode=5) 
 probabs<-getProbabs(taxa=50,mode=6,k=.08) #the soil samples had sheldon's evenness of about .6, and a k=0.08 gives this
 sort(probabs,decreasing=T)
@@ -153,7 +398,7 @@ getProbabs<-function(taxa = 10, mode = 1, k = 0.5){
   }else if(mode == 6){
     pi=geom.series(l=taxa, counts=1, k = k)
   }else if(mode == 7){
-    pi=rnbinom(n=taxa, mu=.5, size = k)
+    pi=sort(rnbinom(n=taxa*20, mu=1.36, size = k),decreasing = T)[1:taxa]#sort(rnbinom(10000,mu=1.36,size=.011),decreasing = T)
     pi=pi/sum(pi)
   }else if(mode < 1 || mode > 7){
     stop("Choose a mode between 1 and 6.")
