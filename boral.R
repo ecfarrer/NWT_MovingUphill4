@@ -71,6 +71,8 @@ comm.dataALL5[1:10,1:10]
 # biogeochemistry and plant density/cover data
 biogeo6$X.SampleID
 
+rcorr(as.matrix(data.frame(biogeo6$TC,biogeo6$snowdepth,biogeo6$pH,biogeo6$moisture)))
+
 #Merge the biogeo6 with comm.dataALL, then split them to make sure the same samples and order are in each dataset
 comm.bio<-merge(biogeo6,comm.dataALL5)
 comm.bio[1:10,1:60]
@@ -97,7 +99,7 @@ hmscYlo[1:10,1:10]
 hmscXlo<-data.frame(snowdepth=comm.bio$snowdepth,TC=comm.bio$TC,pH=comm.bio$pH,moisture=comm.bio$moisture)[ind,] #,lomehi=comm.bio$lomehi,plantcov=comm.bio$plantcov,whc=comm.bio$WHC
 rownames(hmscXlo)<-comm.bio$X.SampleID[ind]
 
-rcorr(as.matrix(hmscXlo[,2:(dim(hmscXlo)[2]-1)]))
+rcorr(as.matrix(hmscXlo))
 #plot(hmscX$TC,hmscX$moisture)
 
 #take out species that are zeros

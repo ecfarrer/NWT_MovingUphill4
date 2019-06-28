@@ -1200,7 +1200,7 @@ richEukN2
 richBac2
 richITS2
 
-#full count otu tables (for ordination)
+#full rarefied count otu tables (for ordination and for networks)
 datEukS5otu
 datEukS5cotu
 datEukN5otu
@@ -1210,7 +1210,7 @@ datBacS5cotu
 datITSS5otu
 datITSS5cotu
 
-#reduced rarefied rel abun and count otu tables (for networks)
+#reduced rarefied rel abun and count otu tables (originally for networks, but I didn't actually use this, I used above)
 datEukS5otu3
 datEukS5cotu3
 datEukN5otu3

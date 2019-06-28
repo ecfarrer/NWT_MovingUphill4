@@ -195,10 +195,10 @@ commI3 <- cmultRepl(commI2,label=0, method="CZM")
 commI4 <- t(apply(commI3, 1, function(x){log(x) - mean(log(x))}))
 
 #just the stats:
-adonis2(commN4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
-adonis2(commS4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
 adonis2(commB4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
 adonis2(commI4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
+adonis2(commS4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
+adonis2(commN4~lomehi,data=env,permutations = how(nperm=10000),method="euclidean")
 
 #plots and extra analyses and visuals are below
 
@@ -230,9 +230,14 @@ anova(mydbrda, by = "margin",permutations = how(nperm=10000))
 col<-ifelse(env$lomehi=="lo","#9350a1",ifelse(env$lomehi=="me","#697cd4",ifelse(env$lomehi=="hi","#62ad64","#b8475f")))
 #low purple, meblue , hi green, else red
 
-plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=2)
-text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
-text(scores(mydbrda)$sites,labels=env$Sample_name)
+#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/ordinationN.pdf",width=3.8,height=4.2)
+plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=1,cex.lab=.8,cex.axis=.8,xlab="Axis 1 (5.4%)",ylab="Axis 2 (2.7%)")#,xlim=c(-4,3.5),ylim=c(-5,4)
+#text(scores(mydbrda)$centroids,labels=c("Late","Early","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
+#text(scores(mydbrda)$sites,labels=env$Sample_name)
+#the ellipses look crappy and big
+#ordiellipse(mydbrda,groups=col,col=c("#62ad64","#697cd4","#9350a1"),conf=.95,kind="sd",lwd=2)#
+legend("bottomleft",c("Early","Mid","Late"),cex=.8,pch=21,col=c("#9350a1","#697cd4","#62ad64"),pt.bg=c("#9350a1","#697cd4","#62ad64"),bty="n")
+dev.off()
 
 
 #Small euks, explains 8.2% p=0.001
@@ -242,9 +247,12 @@ anova(mydbrda, by = "margin",permutations = how(nperm=10000))
 col<-ifelse(env$lomehi=="lo","#9350a1",ifelse(env$lomehi=="me","#697cd4",ifelse(env$lomehi=="hi","#62ad64","#b8475f")))
 #low purple, meblue , hi green, else red
 
-plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=2)
-text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
-text(scores(mydbrda)$sites,labels=env$Sample_name)
+#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/ordinationS.pdf",width=3.8,height=4.2)
+plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=1,cex.lab=.8,cex.axis=.8,xlab="Axis 1 (6.4%)",ylab="Axis 2 (1.8%)")
+#text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
+#text(scores(mydbrda)$sites,labels=env$Sample_name)
+legend("bottomleft",c("Early","Mid","Late"),cex=.8,pch=21,col=c("#9350a1","#697cd4","#62ad64"),pt.bg=c("#9350a1","#697cd4","#62ad64"),bty="n")
+dev.off()
 
 
 #Bact, explains 9.3%, p=0.001
@@ -254,10 +262,12 @@ anova(mydbrda, by = "margin",permutations = how(nperm=10000))
 col<-ifelse(env$lomehi=="lo","#9350a1",ifelse(env$lomehi=="me","#697cd4",ifelse(env$lomehi=="hi","#62ad64","#b8475f")))
 #low purple, meblue , hi green, else red
 
-plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=2)
-text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
-text(scores(mydbrda)$sites,labels=env$Sample_name)
-
+#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/ordinationB.pdf",width=3.8,height=4.2)
+plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=1,cex.lab=.8,cex.axis=.8,xlab="Axis 1 (7.4%)",ylab="Axis 2 (2.0%)")
+#text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
+#text(scores(mydbrda)$sites,labels=env$Sample_name)
+legend("bottomleft",c("Early","Mid","Late"),cex=.8,pch=21,col=c("#9350a1","#697cd4","#62ad64"),pt.bg=c("#9350a1","#697cd4","#62ad64"),bty="n")
+dev.off()
 
 #Fungi, explains 10.2% p=0.001
 mydbrda<-dbrda(commI4~lomehi,distance="euclidean",data=env)
@@ -266,9 +276,12 @@ anova(mydbrda, by = "margin",permutations = how(nperm=10000))
 col<-ifelse(env$lomehi=="lo","#9350a1",ifelse(env$lomehi=="me","#697cd4",ifelse(env$lomehi=="hi","#62ad64","#b8475f")))
 #low purple, meblue , hi green, else red
 
-plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=2)
-text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
-text(scores(mydbrda)$sites,labels=env$Sample_name)
+#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/ordinationI.pdf",width=3.8,height=4.2)
+plot(scores(mydbrda)$sites,col=col,bg=col,pch=21,cex=1,cex.lab=.8,cex.axis=.8,xlab="Axis 1 (8.3%)",ylab="Axis 2 (1.9%)")
+#text(scores(mydbrda)$centroids,labels=c("High","Low","Mid"),col=c("#62ad64","#9350a1","#697cd4"),cex=2)
+#text(scores(mydbrda)$sites,labels=env$Sample_name)
+legend("bottomright",c("Early","Mid","Late"),cex=.8,pch=21,col=c("#9350a1","#697cd4","#62ad64"),pt.bg=c("#9350a1","#697cd4","#62ad64"),bty="n")
+dev.off()
 
 
 
@@ -279,36 +292,4 @@ text(scores(mydbrda)$sites,labels=env$Sample_name)
 
 
 
-
-
-
-
-#old code
-mynmds<-metaMDS(comm.dataBac[,32:3430],dist="bray",trymax = 1000)
-#old lomehi
-col=ifelse(comm.dataBac$lomehi=="lo","lightblue",NA)
-col[which(comm.dataBac$lomehi=="me")]<-"dodgerblue"
-col[which(comm.dataBac$lomehi=="hi")]<-"darkblue"
-
-plot(scores(mynmds),col=col,pch=21,bg=col)#-scores(mynmds)[,1],scores(mynmds)[,2]
-ordiellipse(mynmds,groups=col,col=c("darkblue","dodgerblue","lightblue"),conf=.99999,kind="se",lwd=2)#
-legend("bottomright",c("Early","Mid","Late"),col=c("#ab3b57","#5268cb","#639e51"),pch=21,pt.bg=c("#ab3b57","#5268cb","#639e51"),lty=1,bty="n")
-
-
-#contains all data plus biogeochemistry and plant cover, 75 samples
-#biogeo info 53
-#N 143
-#S 1124
-#Bact 3399
-#ITS 1122
-ordi.bact<-cbind(comm.bio[,1:53],comm.bio[,1321:4719])
-
-mynmds<-metaMDS(ordi.bact[,54:3452],dist="bray",trymax = 1000)
-#new lomehi
-col=ifelse(ordi.bact$lomehi=="lo","lightblue",NA)
-col[which(ordi.bact$lomehi=="me")]<-"dodgerblue"
-col[which(ordi.bact$lomehi=="hi")]<-"darkblue"
-
-plot(scores(mynmds),col=col,pch=21,bg=col)#-scores(mynmds)[,1],scores(mynmds)[,2]
-ordiellipse(mynmds,groups=col,col=c("darkblue","dodgerblue","lightblue"),conf=.99999,kind="se",lwd=2)#
 

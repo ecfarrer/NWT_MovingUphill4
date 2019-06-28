@@ -23,9 +23,14 @@ MovingUphill4_Workspace3ITSbioinformatics.Rdata
 MovingUphill4_WorkspaceDataCleaning.Rdata
 MovingUphill4_WorkspaceDataCleaningOutput.Rdata #just the 15 output files I need for downstream analysis, all intermediate files deleted from env
 MovingUphill4_WorkspaceAnalysisNetworkTrials.Rdata #all the different trials I ran when deciding the parameters for the networks
-MovingUphill4_WorkspaceAnalysis1.Rdata 
+MovingUphill4_WorkspaceSubsetting.Rdata #subsetting hi plots 10 times 273 of the 306 species to make it similar to the number of taxa going in to the network analysis
+MovingUphill4_WorkspaceSimulations.Rdata # simulations based on Faust 2015
+MovingUphill4_WorkspaceRandomizations.Rdata #randomizing my data to detect false positives
+MovingUphill4_WorkspaceAnalysis1.Rdata #reduced network analysis, only final models, alternate back and forth
+MovingUphill4_WorkspaceAnalysis2.Rdata #reduced network analysis, only final models
 
-save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/")  # 
+
+save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis1.Rdata")  # 
 
 load("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis2.Rdata") 
 
@@ -107,6 +112,11 @@ library(zCompositions)
 #for boral
 library(boral) #Need version 0.7 or later, available on CRAN.
 library(Matrix)
+
+#for simulations
+library(dirmult)
+library(HMP)
+library(vegan)
 
 #detach(package:igraph)
 #sessionInfo()

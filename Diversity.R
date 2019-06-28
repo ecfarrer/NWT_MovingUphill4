@@ -16,6 +16,9 @@ richITS2$X.SampleID<-rownames(richITS2)
 richITS3<-merge(richITS2,biogeo6,"X.SampleID")
 richITS3$type<-"2Fungi"
 
+#which chao1
+richITS3$PD<-richITS3$Chao1
+
 richEukS2$X.SampleID<-rownames(richEukS2)
 richEukS3<-merge(richEukS2,biogeo6,"X.SampleID")
 richEukS3$type<-"3Small Eukaryotes"
@@ -33,7 +36,7 @@ richmeans<-richdata%>%
   summarise(mean=mean(PD),se=std.error(PD))
 richmeans$lomehi<-factor(richmeans$lomehi,levels=c("lo","me","hi"))
 
-#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/diversitybysuccessionalstage.pdf",width=3.386,height=3.386) #width=3.386 or 7
+#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/diversitybysuccessionalstagechao1.pdf",width=3.386,height=3.386) #width=3.386 or 7
 ggplot(richmeans,aes(x=lomehi,y=mean,group=type))+
   labs(x = "",y="Diversity")+
   theme_classic()+
@@ -54,6 +57,12 @@ anova(mn<-lm(PD~lomehi,data=richEukN3))
 summary(mb <- aov(PD~lomehi, data = richBac3))
 TukeyHSD(mb, "lomehi", ordered = TRUE)
 plot(TukeyHSD(mb, "lomehi"))
+summary(mb <- aov(PD~lomehi, data = richITS3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
+summary(mb <- aov(PD~lomehi, data = richEukS3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
+summary(mb <- aov(PD~lomehi, data = richEukN3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
 
 #Succession as continuous
 ggplot(richdata,aes(x=log10(Plant_Dens+1),y=SR))+# as.numeric(fert),color=species
@@ -119,33 +128,31 @@ ggplot(richmeans,aes(x=lomehi,y=mean,group=1))+
 
 ##### Species richness #####
 
-#pd16S<-pd(as.matrix(datBacr3fotu[,-c(1:31)]),phy_tree(datBac3f),include.root=TRUE)
-pdBac$X.SampleID<-rownames(pdBac)
-pdBac2<-merge(pdBac,biogeo6,"X.SampleID")
-pdBac2$type<-"1Bacteria"
+richBac2$X.SampleID<-rownames(richBac2)
+richBac3<-merge(richBac2,biogeo6,"X.SampleID")
+richBac3$type<-"1Bacteria"
 
-richITS$X.SampleID<-rownames(richITS)
-richITS2<-merge(richITS,biogeo6,"X.SampleID")
-richITS2$type<-"2Fungi"
+richITS2$X.SampleID<-rownames(richITS2)
+richITS3<-merge(richITS2,biogeo6,"X.SampleID")
+richITS3$type<-"2Fungi"
 
-pdEukS$X.SampleID<-rownames(pdEukS)
-pdEukS2<-merge(pdEukS,biogeo6,"X.SampleID")
-pdEukS2$type<-"3Small Eukaryotes"
+richEukS2$X.SampleID<-rownames(richEukS2)
+richEukS3<-merge(richEukS2,biogeo6,"X.SampleID")
+richEukS3$type<-"3Small Eukaryotes"
 
-pdEukN$X.SampleID<-rownames(pdEukN)
-pdEukN$X.SampleID<-gsub(pattern = "N", replace = "S", x = pdEukN$X.SampleID)
-pdEukN2<-merge(pdEukN,biogeo6,"X.SampleID")
-pdEukN2$type<-"4Soil Mesofauna"
+richEukN2$X.SampleID<-rownames(richEukN2)
+richEukN2$X.SampleID<-gsub(pattern = "N", replace = "S", x = richEukN2$X.SampleID)
+richEukN3<-merge(richEukN2,biogeo6,"X.SampleID")
+richEukN3$type<-"4Soil Mesofauna"
 
-
-richdata<-rbind(pdBac2,richITS2,pdEukS2,pdEukN2)
+richdata<-rbind(richBac3,richITS3,richEukS3,richEukN3)
 
 richmeans<-richdata%>%
   group_by(type,lomehi)%>%
-  summarise(mean=mean(SR),se=std.error(SR))
+  summarise(mean=mean(Chao1),se=std.error(Chao1))
 richmeans$lomehi<-factor(richmeans$lomehi,levels=c("lo","me","hi"))
 
-#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/Figs/richnessbysuccessionalstage.pdf",width=3.386,height=3.386) #width=3.386 or 7
+#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/richnessbysuccessionalstagechao1.pdf",width=3.386,height=3.386) #width=3.386 or 7
 ggplot(richmeans,aes(x=lomehi,y=mean,group=type))+
   labs(x = "",y="Taxonomic Richness")+
   theme_classic()+
@@ -158,11 +165,20 @@ ggplot(richmeans,aes(x=lomehi,y=mean,group=type))+
   guides(col = guide_legend(ncol = 1))
 dev.off()
 
+anova(lm(Chao1~lomehi,data=richBac3))
+anova(lm(Chao1~lomehi,data=richITS3))
+anova(lm(Chao1~lomehi,data=richEukS3))
+anova(lm(Chao1~lomehi,data=richEukN3))
 
-anova(lm(SR~lomehi,data=pdBac2))
-anova(lm(SR~lomehi,data=richITS2))
-anova(lm(SR~lomehi,data=pdEukS2))
-anova(lm(SR~lomehi,data=pdEukN2))
+summary(mb <- aov(Chao1~lomehi, data = richBac3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
+plot(TukeyHSD(mb, "lomehi"))
+summary(mb <- aov(Chao1~lomehi, data = richITS3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
+summary(mb <- aov(Chao1~lomehi, data = richEukS3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
+summary(mb <- aov(Chao1~lomehi, data = richEukN3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
 
 
 
@@ -170,30 +186,30 @@ anova(lm(SR~lomehi,data=pdEukN2))
 
 ##### Evenness #####
 
-pdBac$Evenness<-vegan::diversity(datBacS3cotu[,-c(1:31)])/log(specnumber(datBacS3cotu[,-c(1:31)]))
-pdBac2<-merge(pdBac,biogeo6,"X.SampleID")
-pdBac2$type<-"1Bacteria"
+richBac2$Evenness<-vegan::diversity(datBacS5cotu[,-c(1:33)])/log(specnumber(datBacS5cotu[,-c(1:33)]))
+richBac3<-merge(richBac2,biogeo6,"X.SampleID")
+richBac3$type<-"1Bacteria"
 
-richITS$Evenness<-vegan::diversity(datITSS3cotu[,-c(1:31)])/log(specnumber(datITSS3cotu[,-c(1:31)]))
-richITS2<-merge(richITS,biogeo6,"X.SampleID")
-richITS2$type<-"2Fungi"
+richITS2$Evenness<-vegan::diversity(datITSS5cotu[,-c(1:33)])/log(specnumber(datITSS5cotu[,-c(1:33)]))
+richITS3<-merge(richITS2,biogeo6,"X.SampleID")
+richITS3$type<-"2Fungi"
 
-pdEukS$Evenness<-vegan::diversity(datEukS3cotu[,-c(1:31)])/log(specnumber(datEukS3cotu[,-c(1:31)]))
-pdEukS2<-merge(pdEukS,biogeo6,"X.SampleID")
-pdEukS2$type<-"3Small Eukaryotes"
+richEukS2$Evenness<-vegan::diversity(datEukS5cotu[,-c(1:33)])/log(specnumber(datEukS5cotu[,-c(1:33)]))
+richEukS3<-merge(richEukS2,biogeo6,"X.SampleID")
+richEukS3$type<-"3Small Eukaryotes"
 
-pdEukN$Evenness<-vegan::diversity(datEukN3cotu[,-c(1:31)])/log(specnumber(datEukN3cotu[,-c(1:31)]))
-pdEukN2<-merge(pdEukN,biogeo6,"X.SampleID")
-pdEukN2$type<-"4Soil Mesofauna"
+richEukN2$Evenness<-vegan::diversity(datEukN5cotu[,-c(1:33)])/log(specnumber(datEukN5cotu[,-c(1:33)]))
+richEukN3<-merge(richEukN2,biogeo6,"X.SampleID")
+richEukN3$type<-"4Soil Mesofauna"
 
-richdata<-rbind(pdBac2,richITS2,pdEukS2,pdEukN2)
+richdata<-rbind(richBac3,richITS3,richEukS3,richEukN3)
 
 richmeans<-richdata%>%
   group_by(type,lomehi)%>%
   summarise(mean=mean(Evenness,na.rm=T),se=std.error(Evenness,na.rm=T))
 richmeans$lomehi<-factor(richmeans$lomehi,levels=c("lo","me","hi"))
 
-#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/Figures&Stats/kingdata/Figs/evennessbysuccessionalstage.pdf",width=3.386,height=3.386) #width=3.386 or 7
+#pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/evennessbysuccessionalstage.pdf",width=3.386,height=3.386) #width=3.386 or 7
 ggplot(richmeans,aes(x=lomehi,y=mean,group=type))+
   labs(x = "",y="Evenness")+
   theme_classic()+
@@ -207,14 +223,29 @@ ggplot(richmeans,aes(x=lomehi,y=mean,group=type))+
 dev.off()
 
 
-anova(lm(Evenness~lomehi,data=pdBac2))
-anova(lm(Evenness~lomehi,data=richITS2))
-anova(lm(Evenness~lomehi,data=pdEukS2))
-anova(lm(Evenness~lomehi,data=pdEukN2))
+anova(lm(Evenness~lomehi,data=richBac3))
+anova(lm(Evenness~lomehi,data=richITS3))
+anova(lm(Evenness~lomehi,data=richEukS3))
+anova(lm(Evenness~lomehi,data=richEukN3))
+
+summary(mb <- aov(Evenness~lomehi, data = richBac3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
+plot(TukeyHSD(mb, "lomehi"))
+summary(mb <- aov(Evenness~lomehi, data = richITS3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
+summary(mb <- aov(Evenness~lomehi, data = richEukS3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
+summary(mb <- aov(Evenness~lomehi, data = richEukN3))
+TukeyHSD(mb, "lomehi", ordered = TRUE)
 
 
 
-# Old code when testing DADA2 with different parameters
+
+
+
+
+
+# Old code when testing DADA2 with different parameters (none of them made a difference)
 
 biogeo8<-read.csv("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/biogeo8.csv")
 
