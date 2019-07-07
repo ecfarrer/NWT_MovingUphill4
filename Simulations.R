@@ -14,6 +14,332 @@ library(vegan)
 #me has 10971 taxa (10937 with no plants), 7910 bacteria, 241 into networks
 #hi has 11942 taxa (11893 with no plants), 7882 bacteria, 209 into networks
 
+
+###### Taking distribution from my actual data ######
+#taking the distribution from one sample in lo and hi. this works...preserves the differences in richness and in how many species pass my cutoff filter
+probabslo<-templo
+simlo<-t(simCounts(samples=25,counts=2000,pi=probabslo,theta=.01,distrib="dm",maxcount = 100))#theta=.0009 was from grassland, originally I was using 0.02
+mean(rowSums(simlo>0)) #mean richness
+#sort(colSums(simlo>0),decreasing = T) #distribution of species frequencies
+length(which(colSums(simlo>0)>11))  #passing filter
+
+probabshi<-temphi
+simhi<-t(simCounts(samples=25,counts=2000,pi=probabshi,theta=.01,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
+mean(rowSums(simhi>0)) #mean richness
+#sort(colSums(simhi>0),decreasing = T) #distribution of species frequencies
+length(which(colSums(simhi>0)>11))  #passing filter
+
+#taking an average of all samples of lo and hi (this doesn't create the same probablity distribution as just taking one sample but it will allow me to use higher read counts)
+probabslo<-lovec
+simlo<-t(simCounts(samples=25,counts=8000,pi=probabslo,theta=.0037,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
+mean(rowSums(simlo>0)) #mean richness
+#sort(colSums(simlo>0),decreasing = T) #distribution of species frequencies
+length(which(colSums(simlo>0)>11))  #passing filter
+
+probabshi<-hivec
+simhi<-t(simCounts(samples=25,counts=8000,pi=probabshi,theta=.0031,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
+mean(rowSums(simhi>0)) #mean richness
+#sort(colSums(simhi>0),decreasing = T) #distribution of species frequencies
+length(which(colSums(simhi>0)>11))  #passing filter
+
+
+
+
+
+#### Run loop for short vectors ####
+#set probabilities if you want just one
+#probabslo<-templo #from plot 1
+#probabshi<-temphi
+
+#generate x if you want to
+#simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
+
+#generate output dataframes
+outputlo<-data.frame(rep=rep(NA,25),richness=rep(NA,25),passcutoff=rep(NA,25),pos=rep(NA,25),neg=rep(NA,25),tot=rep(NA,25),vertices=rep(NA,25),complexity=rep(NA,25))
+outputlomod<-list(NA)
+outputlorescor<-list(NA)
+outputhi<-data.frame(rep=rep(NA,25),richness=rep(NA,25),passcutoff=rep(NA,25),pos=rep(NA,25),neg=rep(NA,25),tot=rep(NA,25),vertices=rep(NA,25),complexity=rep(NA,25))
+outputhimod<-list(NA)
+outputhirescor<-list(NA)
+
+#lo
+for(i in 1:25){
+  temp<-sort(t(hmscYlo2Bac[i,]),decreasing = T)[1:1000]#800 I used 800 for my simulation runs
+  probabslo<-temp/sum(temp)  #take this and use it as probab
+  
+  set.seed(i+4)
+  simlo<-t(simCounts(samples=25,counts=2000,pi=probabslo,theta=.01,distrib="dm")) #counts=2000, theta=.01
+  outputlo[i,"richness"]<-mean(rowSums(simlo>0)) #mean richness
+  #sort(colSums(simlo>0),decreasing = T) #distribution of species frequencies
+  outputlo[i,"passcutoff"]<-length(which(colSums(simlo>0)>11))  #passing filter
+  
+  ind<-which(colSums(simlo)>0);length(ind)
+  simlo2<-simlo[,ind]
+  #impute zeros
+  simlo3 <- cmultRepl(simlo2,label=0, method="CZM")
+  simlo3[simlo3<=0]<-min(simlo3[simlo3>0])
+  #Calculate clr
+  simlo4 <- t(apply(simlo3, 1, function(x){log(x) - mean(log(x))}))
+  ind<-which(colSums(simlo2>0)>11)
+  simlo5<-simlo4[,ind]
+  
+  #generate random variables for the environment
+  #simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
+  mod.lo<- boral(y = simlo5, X = NULL, lv.control = list(num.lv = 2), family = "normal", save.model = TRUE, calc.ics = F, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+  rescor.lo <- get.residual.cor(mod.lo) 
+  
+  outputlomod[[i]]<-mod.lo #this saves the data too $X and $y
+  outputlorescor[[i]]<-rescor.lo
+  
+  colMatlo<-rescor.lo$sig.correlaton
+  colMatlo[which(rescor.lo$sig.correlaton>0)]<-1
+  colMatlo[which(rescor.lo$sig.correlaton<0)]<- -1
+  
+  graphlo1<-graph_from_adjacency_matrix(colMatlo, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
+  myedgelistlo<-data.frame(as_edgelist(graphlo1),weight=E(graphlo1)$weight) #just the edges
+  
+  graphlo2<-graph.edgelist(as.matrix(myedgelistlo[,1:2]),directed=FALSE)
+  length(E(graphlo2))/length(V(graphlo2))
+
+  outputlo[i,"rep"]<-i
+  outputlo[i,"pos"]<-length(which(myedgelistlo$weight==1))
+  outputlo[i,"neg"]<-length(which(myedgelistlo$weight==-1))
+  outputlo[i,"tot"]<-length(which(myedgelistlo$weight==1))+length(which(myedgelistlo$weight==-1))
+  outputlo[i,"vertices"]<-length(V(graphlo2))
+  outputlo[i,"complexity"]<-length(E(graphlo2))/length(V(graphlo2))
+  print(outputlo)
+}
+
+
+#hi
+for (j in 1:25){
+  temp<-sort(t(hmscYhi2Bac[j,]),decreasing = T)[1:1500]
+  probabshi<-temp/sum(temp)  #take this and use it as probab
+  
+  set.seed(j+4)
+  simhi<-t(simCounts(samples=25,counts=2000,pi=probabshi,theta=.01,distrib="dm"))
+  outputhi[j,"richness"]<-mean(rowSums(simhi>0)) #mean richness
+  #sort(colSums(simhi>0),decreasing = T) #distribution of species frequencies
+  outputhi[j,"passcutoff"]<-length(which(colSums(simhi>0)>11))  #passing filter
+  
+  ind<-which(colSums(simhi)>0);length(ind)
+  simhi2<-simhi[,ind]
+  #impute zeros
+  simhi3 <- cmultRepl(simhi2,label=0, method="CZM")
+  simlo3[simlo3<=0]<-min(simlo3[simlo3>0])
+  #Calculate clr
+  simhi4 <- t(apply(simhi3, 1, function(x){log(x) - mean(log(x))}))
+  ind<-which(colSums(simhi2>0)>11)
+  simhi5<-simhi4[,ind]
+  
+  #generate random variables for the environment
+  #simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
+  mod.hi<- boral(y = simhi5, X = NULL, lv.control = list(num.lv = 2), family = "normal", save.model = TRUE, calc.ics = F, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+  rescor.hi <- get.residual.cor(mod.hi) 
+
+  outputhimod[[j]]<-mod.hi #this saves the data too $X and $y
+  outputhirescor[[j]]<-rescor.hi
+  
+  colMathi<-rescor.hi$sig.correlaton
+  colMathi[which(rescor.hi$sig.correlaton>0)]<-1
+  colMathi[which(rescor.hi$sig.correlaton<0)]<- -1
+  
+  graphhi1<-graph_from_adjacency_matrix(colMathi, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
+  myedgelisthi<-data.frame(as_edgelist(graphhi1),weight=E(graphhi1)$weight) #just the edges
+  
+  graphhi2<-graph.edgelist(as.matrix(myedgelisthi[,1:2]),directed=FALSE)
+  length(E(graphhi2))/length(V(graphhi2))
+  
+  outputhi[j,"rep"]<-j
+  outputhi[j,"pos"]<-length(which(myedgelisthi$weight==1))
+  outputhi[j,"neg"]<-length(which(myedgelisthi$weight==-1))
+  outputhi[j,"tot"]<-length(which(myedgelisthi$weight==1))+length(which(myedgelisthi$weight==-1))
+  outputhi[j,"vertices"]<-length(V(graphhi2))
+  outputhi[j,"complexity"]<-length(E(graphhi2))/length(V(graphhi2))
+  print(outputhi)
+}
+
+#FINAL RESULTS, USE THIS FOR MANUSCRIPT
+outputloSF<-outputlo
+outputhiSF<-outputhi
+outputSF<-rbind(outputloSF,outputhiSF)
+
+plot(rbind(outputloSF,outputhiSF)$richness,rbind(outputloSF,outputhiSF)$tot)
+abline(lm(rbind(outputloSF,outputhiSF)$tot~rbind(outputloSF,outputhiSF)$richness))
+summary(lm(rbind(outputloSF,outputhiSF)$tot~rbind(outputloSF,outputhiSF)$richness))
+
+plot(rbind(outputloSF,outputhiSF)$passcutoff,rbind(outputloSF,outputhiSF)$tot)
+abline(lm(rbind(outputloSF,outputhiSF)$tot~rbind(outputloSF,outputhiSF)$passcutoff))
+summary(lm(rbind(outputloSF,outputhiSF)$tot~rbind(outputloSF,outputhiSF)$passcutoff))
+
+plot(rbind(outputloSF,outputhiSF)$richness,rbind(outputloSF,outputhiSF)$complexity)
+abline(lm(rbind(outputloSF,outputhiSF)$complexity~rbind(outputloSF,outputhiSF)$richness))
+summary(lm(rbind(outputloSF,outputhiSF)$complexity~rbind(outputloSF,outputhiSF)$richness))
+
+plot(rbind(outputloSF,outputhiSF)$passcutoff,rbind(outputloSF,outputhiSF)$complexity)
+abline(lm(rbind(outputloSF,outputhiSF)$complexity~rbind(outputloSF,outputhiSF)$passcutoff))
+summary(lm(rbind(outputloSF,outputhiSF)$complexity~rbind(outputloSF,outputhiSF)$passcutoff))
+
+outputSF2<-outputSF%>%
+  filter(complexity<2)
+plot(outputSF2$richness,outputSF2$complexity)
+abline(lm(outputSF2$complexity~outputSF2$richness))
+summary(lm(outputSF2$complexity~outputSF2$richness))
+
+plot(outputSF2$passcutoff,outputSF2$complexity)
+abline(lm(outputSF2$complexity~outputSF2$passcutoff))
+summary(lm(outputSF2$complexity~outputSF2$passcutoff))
+
+
+
+#### Run loop for long vectors ####
+
+#I wrote this to test it out, but never used it really b/c the models take so long to run. If I try the short vectors code above with a theta=0.003, with 2000 reads, there is for example 334 average richness and 312 taxa pass my filter, my actual data with >7000 reads has a richness of 638 and 306 pass filter. Thus the numbers just seemed off, there is too much similarity in rare species comp among samples, the theta was not reproducing the variability in the samples well.
+
+probabslo<-dmodlopi #the full 25 plot abundance vector
+probabshi<-dmodhipi
+
+#generate x if you want to
+#simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
+
+#generate output dataframes
+outputlo<-data.frame(rep=rep(NA,10),richness=rep(NA,10),passcutoff=rep(NA,10),pos=rep(NA,10),neg=rep(NA,10),tot=rep(NA,10))
+outputhi<-data.frame(rep=rep(NA,10),richness=rep(NA,10),passcutoff=rep(NA,10),pos=rep(NA,10),neg=rep(NA,10),tot=rep(NA,10))
+#outputlomod<-list(NA)
+#outputlorescor<-list(NA)
+
+#lo
+for(i in 1:10){
+#  temp<-sort(t(hmscYlo2Bac[i,]),decreasing = T)[1:800]#800 I used 800 for my simulation runs
+#  probabslo<-temp/sum(temp)  #take this and use it as probab
+  
+  set.seed(i+4)
+  simlo<-t(simCounts(samples=25,counts=7987,pi=probabslo,theta=.00372,distrib="dm",maxcount = 100)) #counts=2000, theta=.01
+  outputlo[i,"richness"]<-mean(rowSums(simlo>0)) #mean richness
+  #sort(colSums(simlo>0),decreasing = T) #distribution of species frequencies
+  outputlo[i,"passcutoff"]<-length(which(colSums(simlo>0)>11))  #passing filter
+  
+  ind<-which(colSums(simlo)>0);length(ind)
+  simlo2<-simlo[,ind]#375 species
+  #impute zeros
+  simlo3 <- cmultRepl(simlo2,label=0, method="CZM")
+  #Calculate clr
+  simlo4 <- t(apply(simlo3, 1, function(x){log(x) - mean(log(x))}))
+  ind<-which(colSums(simlo2>0)>11)
+  simlo5<-simlo4[,ind]
+
+  #generate random variables for the environment
+  #simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
+  mod.lo<- boral(y = simlo5, X = NULL, lv.control = list(num.lv = 3), family = "normal", save.model = TRUE, calc.ics = F, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+  rescor.lo <- get.residual.cor(mod.lo) 
+  colMatlo<-rescor.lo$sig.correlaton
+  colMatlo[which(rescor.lo$sig.correlaton>0)]<-1
+  colMatlo[which(rescor.lo$sig.correlaton<0)]<- -1
+  
+  graphlo1<-graph_from_adjacency_matrix(colMatlo, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
+  myedgelistlo<-data.frame(as_edgelist(graphlo1),weight=E(graphlo1)$weight) #just the edges
+  
+  outputlo[i,"rep"]<-i
+  outputlo[i,"pos"]<-length(which(myedgelistlo$weight==1))
+  outputlo[i,"neg"]<-length(which(myedgelistlo$weight==-1))
+  outputlo[i,"tot"]<-length(which(myedgelistlo$weight==1))+length(which(myedgelistlo$weight==-1))
+  print(outputlo)
+}
+
+#hi
+for (j in 1:10){
+#  temp<-sort(t(hmscYhi2Bac[j,]),decreasing = T)[1:1500]
+#  probabshi<-temp/sum(temp)  #take this and use it as probab
+  
+  set.seed(j+4)
+  simhi<-t(simCounts(samples=25,counts=7987,pi=probabshi,theta=.00309,distrib="dm",maxcount = 100))
+  outputhi[j,"richness"]<-mean(rowSums(simhi>0)) #mean richness
+  #sort(colSums(simhi>0),decreasing = T) #distribution of species frequencies
+  outputhi[j,"passcutoff"]<-length(which(colSums(simhi>0)>11))  #passing filter
+  
+  ind<-which(colSums(simhi)>0);length(ind)
+  simhi2<-simhi[,ind]#375 species
+  #impute zeros
+  simhi3 <- cmultRepl(simhi2,label=0, method="CZM")
+  #Calculate clr
+  simhi4 <- t(apply(simhi3, 1, function(x){log(x) - mean(log(x))}))
+  ind<-which(colSums(simhi2>0)>11)
+  simhi5<-simhi4[,ind]
+  
+  #generate random variables for the environment
+  #simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
+  mod.hi<- boral(y = simhi5, X = NULL, lv.control = list(num.lv = 2), family = "normal", save.model = TRUE, calc.ics = F, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
+  rescor.hi <- get.residual.cor(mod.hi) 
+  colMathi<-rescor.hi$sig.correlaton
+  colMathi[which(rescor.hi$sig.correlaton>0)]<-1
+  colMathi[which(rescor.hi$sig.correlaton<0)]<- -1
+  
+  graphhi1<-graph_from_adjacency_matrix(colMathi, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
+  myedgelisthi<-data.frame(as_edgelist(graphhi1),weight=E(graphhi1)$weight) #just the edges
+  
+  outputhi[j,"rep"]<-j
+  outputhi[j,"pos"]<-length(which(myedgelisthi$weight==1))
+  outputhi[j,"neg"]<-length(which(myedgelisthi$weight==-1))
+  outputhi[j,"tot"]<-length(which(myedgelisthi$weight==1))+length(which(myedgelisthi$weight==-1))
+  print(outputhi)
+}
+
+mean(outputlo$tot)
+std.error(outputlo$tot)
+mean(outputhi$tot)
+std.error(outputhi$tot)
+
+
+#1000 counts
+outputlo1<-outputlo
+outputhi1<-outputhi
+
+#2000 counts
+outputlo2<-outputlo
+outputhi2<-outputhi
+
+#3000 counts
+outputlo3<-outputlo
+outputhi3<-outputhi
+
+#2000 counts each run using a different vector of probabilities and theta=0.01 and 10 reps
+outputlo4<-outputlo
+outputhi4<-outputhi
+
+plot(rbind(outputlo4,outputhi4)$richness,rbind(outputlo4,outputhi4)$tot)
+abline(lm(rbind(outputlo4,outputhi4)$tot~rbind(outputlo4,outputhi4)$richness))
+summary(lm(rbind(outputlo4,outputhi4)$tot~rbind(outputlo4,outputhi4)$richness))
+plot(rbind(outputlo4,outputhi4)$passcutoff,rbind(outputlo4,outputhi4)$tot)
+abline(lm(rbind(outputlo4,outputhi4)$tot~rbind(outputlo4,outputhi4)$passcutoff))
+summary(lm(rbind(outputlo4,outputhi4)$tot~rbind(outputlo4,outputhi4)$passcutoff))
+
+
+
+ggplot(richdata,aes(x=log10(Plant_Dens+1),y=SR))+# as.numeric(fert),color=species
+  labs(x="Plant density",y="Diversity")+
+  theme_classic()+
+  theme(line=element_line(size=.3),text=element_text(size=12),strip.background = element_rect(colour="white", fill="white"),axis.line=element_line(color="gray30",size=.5))+
+  geom_point(size=1.4)+
+  geom_smooth(method=lm,se=F,size=.8,color="black") +
+  #geom_smooth(method=lm,se=F,size=.8,color="black",formula = y ~ poly(x, 2)) +
+  facet_wrap(~type,scales="free")
+
+
+
+
+
+###### Old code trying different types of simulations #####
+
+###### Using the default parameters from gamma distribution ####
+#just to see what happens, doesn't work (hi has more species passing cutoff). 
+#modifying taxa= does not really work b/c when there is a low number of taxa, all taxa pass filter
+simlo<-t(simMat(taxa=150, samples=25, counts=1000, distrib="dm", maxcount=100, mode=6, k=0.08, theta=0.02, norm=F, shuffle.samples=F))
+length(which(colSums(simlo>0)>11)) 
+t(simlo)
+t(simlo)[111:150,]
+simhi<-t(simMat(taxa=150, samples=25, counts=1000, distrib="dm", maxcount=100, mode=6, k=0.04, theta=0.02, norm=F, shuffle.samples=F))#theta=0.0009
+
+
 #First generate probabilities of each taxon, then simulate counts, then randomize the counts within each species
 #the soil ssamples had sheldon's evenness of about .6, and a k=0.08 gives this. theta=0.0009 is from grassland
 sim<-t(simMat(taxa=140, samples=25, counts=1000, distrib="dm", maxcount=100, mode=6, k=0.04, theta=0.0009, norm=F, shuffle.samples=F))
@@ -88,138 +414,15 @@ sort(colSums(sim2>0),decreasing = T) #
 length(which(colSums(sim2>0)>11)) 
 
 
-#should probably test theta=0.0009
 
 
 
 
-###### Taking distribution from my actual data ######
-#this works...preserves the differences in richness and in how many species pass my cutoff filter
-probabslo<-templo
-simlo<-t(simCounts(samples=25,counts=2000,pi=probabslo,theta=.02,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
-mean(rowSums(simlo>0)) #mean richness
-sort(colSums(simlo>0),decreasing = T) #distribution of species frequencies
-length(which(colSums(simlo>0)>11))  #passing filter
-
-probabshi<-temphi
-simhi<-t(simCounts(samples=25,counts=2000,pi=probabshi,theta=.02,distrib="dm",maxcount = 100))#theta=.0009 was from grassland
-mean(rowSums(simhi>0)) #mean richness
-sort(colSums(simhi>0),decreasing = T) #distribution of species frequencies
-length(which(colSums(simhi>0)>11))  #passing filter
-
-#using the default parameters just to see what happens
-simlo<-t(simMat(taxa=150, samples=25, counts=1000, distrib="dm", maxcount=100, mode=6, k=0.08, theta=0.0009, norm=F, shuffle.samples=F))
-simhi<-t(simMat(taxa=150, samples=25, counts=1000, distrib="dm", maxcount=100, mode=6, k=0.04, theta=0.0009, norm=F, shuffle.samples=F))
 
 
 
-#### initiate things ####
-#set probabilities
-probabslo<-templo
-probabshi<-temphi
 
-#generate x if you want to
-#simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
-
-#generate output dataframes
-outputlo<-data.frame(rep=rep(NA,10),richness=rep(NA,10),passcutoff=rep(NA,10),pos=rep(NA,10),neg=rep(NA,10),tot=rep(NA,10))
-outputhi<-data.frame(rep=rep(NA,10),richness=rep(NA,10),passcutoff=rep(NA,10),pos=rep(NA,10),neg=rep(NA,10),tot=rep(NA,10))
-#outputlomod<-list(NA)
-#outputlorescor<-list(NA)
-
-
-
-#lo
-for(i in 1:10){
-  set.seed(i+4)
-  #print(rnorm(1,0,1))
-  simlo<-t(simCounts(samples=25,counts=3000,pi=probabslo,theta=.02,distrib="dm",maxcount = 100))
-  outputlo[i,"richness"]<-mean(rowSums(simlo>0)) #mean richness
-  #sort(colSums(simlo>0),decreasing = T) #distribution of species frequencies
-  outputlo[i,"passcutoff"]<-length(which(colSums(simlo>0)>11))  #passing filter
-  
-  ind<-which(colSums(simlo)>0);length(ind)
-  simlo2<-simlo[,ind]#375 species
-  #impute zeros
-  simlo3 <- cmultRepl(simlo2,label=0, method="CZM")
-  #Calculate clr
-  simlo4 <- t(apply(simlo3, 1, function(x){log(x) - mean(log(x))}))
-  ind<-which(colSums(simlo2>0)>11)
-  simlo5<-simlo4[,ind]
-
-  #generate random variables for the environment
-  #simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
-  mod.lo<- boral(y = simlo5, X = NULL, lv.control = list(num.lv = 2), family = "normal", save.model = TRUE, calc.ics = F, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
-  rescor.lo <- get.residual.cor(mod.lo) 
-  colMatlo<-rescor.lo$sig.correlaton
-  colMatlo[which(rescor.lo$sig.correlaton>0)]<-1
-  colMatlo[which(rescor.lo$sig.correlaton<0)]<- -1
-  
-  graphlo1<-graph_from_adjacency_matrix(colMatlo, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
-  myedgelistlo<-data.frame(as_edgelist(graphlo1),weight=E(graphlo1)$weight) #just the edges
-  
-  outputlo[i,"rep"]<-i
-  outputlo[i,"pos"]<-length(which(myedgelistlo$weight==1))
-  outputlo[i,"neg"]<-length(which(myedgelistlo$weight==-1))
-  outputlo[i,"tot"]<-length(which(myedgelistlo$weight==1))+length(which(myedgelistlo$weight==-1))
-  print(outputlo)
-}
-
-#hi
-for (j in 1:10){
-  set.seed(j+4)
-  simhi<-t(simCounts(samples=25,counts=3000,pi=probabshi,theta=.02,distrib="dm",maxcount = 100))
-  outputhi[j,"richness"]<-mean(rowSums(simhi>0)) #mean richness
-  #sort(colSums(simhi>0),decreasing = T) #distribution of species frequencies
-  outputhi[j,"passcutoff"]<-length(which(colSums(simhi>0)>11))  #passing filter
-  
-  ind<-which(colSums(simhi)>0);length(ind)
-  simhi2<-simhi[,ind]#375 species
-  #impute zeros
-  simhi3 <- cmultRepl(simhi2,label=0, method="CZM")
-  #Calculate clr
-  simhi4 <- t(apply(simhi3, 1, function(x){log(x) - mean(log(x))}))
-  ind<-which(colSums(simhi2>0)>11)
-  simhi5<-simhi4[,ind]
-  
-  #generate random variables for the environment
-  #simx<-cbind(rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1),rnorm(25,mean=0,sd=1))
-  mod.hi<- boral(y = simhi5, X = NULL, lv.control = list(num.lv = 2), family = "normal", save.model = TRUE, calc.ics = F, mcmc.control = list(n.burnin = 10000, n.iteration = 40000, n.thin = 30, seed = 123))#
-  rescor.hi <- get.residual.cor(mod.hi) 
-  colMathi<-rescor.hi$sig.correlaton
-  colMathi[which(rescor.hi$sig.correlaton>0)]<-1
-  colMathi[which(rescor.hi$sig.correlaton<0)]<- -1
-  
-  graphhi1<-graph_from_adjacency_matrix(colMathi, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
-  myedgelisthi<-data.frame(as_edgelist(graphhi1),weight=E(graphhi1)$weight) #just the edges
-  
-  outputhi[j,"rep"]<-j
-  outputhi[j,"pos"]<-length(which(myedgelisthi$weight==1))
-  outputhi[j,"neg"]<-length(which(myedgelisthi$weight==-1))
-  outputhi[j,"tot"]<-length(which(myedgelisthi$weight==1))+length(which(myedgelisthi$weight==-1))
-  print(outputhi)
-}
-
-mean(outputlo$tot)
-std.error(outputlo$tot)
-mean(outputhi$tot)
-std.error(outputhi$tot)
-
-#1000 counts
-outputlo1<-outputlo
-outputhi1<-outputhi
-
-#2000 counts
-outputlo2<-outputlo
-outputhi2<-outputhi
-
-#3000 counts
-outputlo3<-outputlo
-outputhi3<-outputhi
-
-
-
-##### Exploring the negative binomial
+##### Exploring the negative binomial #####
 
 temp<-dnbinom(0:100, mu=2, size=0.02)
 plot(0:100, temp)
@@ -252,8 +455,6 @@ hmscYme2S
 hmscYhi2Bac
 hmscYhi2S
 
-
-
 dim(hmscYlo2ITS)
 colnames(hmscYlo2ITS)<-1:1325
 dim(hmscYhi2ITS)
@@ -279,7 +480,7 @@ cbind(t(hmscYlo2ITS[1,]),t(hmscYlo2ITS[4,]))
 rowSums(hmscYlo2S)
 
 
-#take one sample in lo and hi and fit a negbin model to it and use those parameters 
+#take one sample in lo and hi and calculate relative abundance and use that (moderately worked) OR fit a negbin model to it and use those parameters (didn't work hi plots had more passing cutoff)
 #templo
 sort(t(hmscYlo2Bac[1,]),decreasing = T)
 temp<-sort(t(hmscYlo2Bac[1,]),decreasing = T)[1:800]#800 I used 800 for my simulation runs
@@ -301,7 +502,30 @@ var(temp2)#variance=mu + mu^2/k; k=(mu^2)/(var-mu)
 mean(temp2)^2/(var(temp2)-mean(temp2)) #(k)
 rnbinom(n=5000,mu=1.01,size=.014)
 
+#take sum of a few or all samples in lo and hi and use relabun of that as probability vector
+lovec<-sort(t(colSums(hmscYlo2Bac)),decreasing=T)
+lovec<-lovec/sum(lovec)
+hivec<-sort(t(colSums(hmscYhi2Bac)),decreasing=T)
+hivec<-hivec/sum(hivec)
+cbind(lovec[1:300],hivec[1:300])
 
+#Using 10 samples from lo and 10 from hi to use in each randomization so that richness is different
+
+
+
+
+####### Fitting the dirichlet multinomial to my data to determine theta parameter #######
+#looks like it works, it took ~45 min to fit.
+#dmodlo<-dirmult(hmscYlo2Bac,trace=T) #rows are subpopultions, columns are categories
+dmodlo
+#dirmult.summary(hmscYlo2Bac,dmodlo)#you should be able to run this but my matrix is too big and it crashes
+dmodlopi<-sort(dmodlo$pi,decreasing = T) #a vector of the probabilities for each taxon
+dmodlo$theta # theta=0.00372
+#dmodhi<-dirmult(hmscYhi2Bac,trace=T) #
+dmodhi
+#dirmult.summary(hmscYhi2Bac,dmodhi)
+dmodhipi<-sort(dmodhi$pi,decreasing = T) #a vector of the probabilities for each taxon
+dmodhi$theta # theta=0.00309
 
 #useful files for looking at my data structures
 rm(list=setdiff(ls(), c("labelfile",

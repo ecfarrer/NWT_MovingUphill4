@@ -672,9 +672,9 @@ dev.off()
 
 ##### Network diagrams for lo #####
 #creating sparse matrix
-colMatlo<-rescor.lo11flv3r$sig.correlaton
-colMatlo[which(rescor.lo11flv3r$sig.correlaton>0)]<-1
-colMatlo[which(rescor.lo11flv3r$sig.correlaton<0)]<- -1
+colMatlo<-rescor.lo11flv3$sig.correlaton
+colMatlo[which(rescor.lo11flv3$sig.correlaton>0)]<-1
+colMatlo[which(rescor.lo11flv3$sig.correlaton<0)]<- -1
 
 # colMatlo<-rescor.lolv4occ9exp4nosite$sig.correlaton
 # colMatlo[which(colMatlo>.85)]<-1
@@ -741,9 +741,9 @@ plot(graph3,vertex.size=4,edge.curved=F,vertex.label=NA,edge.color=ifelse(myedge
 
 ##### Network diagrams for me #####
 #creating sparse matrix
-colMatme<-rescor.me9fixed0$sig.correlaton
-colMatme[which(rescor.me11flv3r$sig.correlaton>0)]<-1
-colMatme[which(rescor.me11flv3r$sig.correlaton<0)]<- -1
+colMatme<-rescor.me11flv3$sig.correlaton
+colMatme[which(rescor.me11flv3$sig.correlaton>0)]<-1
+colMatme[which(rescor.me11flv3$sig.correlaton<0)]<- -1
 
 # colMatme<-rescor.melv4occ9exp4f$sig.correlaton
 # colMatme[which(colMatme>.6)]<-1
@@ -784,7 +784,7 @@ temp2<-myedgelistme[which(myedgelistme$X1%in%temp|myedgelistme$X2%in%temp),]
 temp2
 dim(temp2)
 
-colorgraphme[which(colorgraphme$otu=="N91502b60bb4cd795ba70dd05ed89e805"),]
+colorgraphme[which(colorgraphme$otu=="Bf8ab7e424f6976c81b44b3c809dc6ce7"),]
 colorgraphme[which(colorgraphme$otu=="Bdc4a7fab972ac91dd37631d279420a08"),]
 
 

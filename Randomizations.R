@@ -93,6 +93,20 @@ outputlo[i,"tot"]<-length(which(myedgelistlo$weight==1))+length(which(myedgelist
 #to check that there were mcmc samples
 plot(get.mcmcsamples(outputlomod[[3]])[,2])
 
+#look at the network complexity in one of the randomizations
+i=7
+rescor.lo11flv3r<-outputlorescor[[i]]
+colMatlo<-rescor.lo11flv3r$sig.correlaton
+colMatlo[which(rescor.lo11flv3r$sig.correlaton>0)]<-1
+colMatlo[which(rescor.lo11flv3r$sig.correlaton<0)]<- -1
+
+graphlo1<-graph_from_adjacency_matrix(colMatlo, mode = c( "undirected"), weighted = T, diag = F,add.colnames = NULL, add.rownames = NULL)
+myedgelistlo<-data.frame(as_edgelist(graphlo1),weight=E(graphlo1)$weight) #just the edges
+
+graphlo2<-graph.edgelist(as.matrix(myedgelistlo[,1:2]),directed=FALSE)
+length(E(graphlo2))/length(V(graphlo2))
+
+
 
 ## medium ##
 ind<-which(comm.bio$lomehi=="me")
@@ -276,6 +290,30 @@ mean(outputme[,"tot"]) #4.5
 std.error(outputme[,"tot"]) #1.9
 mean(outputhi[,"tot"]) #38.6
 std.error(outputhi[,"tot"]) #11.6
+
+alldat<-rbind(outputlo,outputme,outputhi)
+alldat$Succession<-rep(c("Early","Mid","Late"),each=10)
+
+alldat%>%
+  group_by(Succession)%>%
+  summarise(mean=mean(tot),se=std.error(tot))
+
+alldat2<-alldat%>%
+  mutate(tot=100*tot/rep(c(2829,2037,594),each=10))%>%
+  group_by(Succession)%>%
+  summarise(mean=mean(tot),se=std.error(tot))
+alldat2$Succession<-factor(alldat2$Succession,levels=c("Early","Mid","Late"))
+
+ggplot(alldat2,aes(x=Succession,y=mean))+
+  labs(x = "",y="% False Positives")+
+  theme_classic()+
+  theme(line=element_line(size=.3),text=element_text(size=10),strip.background = element_rect(colour="white", fill="white"),axis.line=element_line(color="gray30",size=.3),legend.key.size = unit(.6, "line"))+
+  geom_line(stat = "identity", position = "identity",size=.4)+#.5
+  geom_point(size=1.5)+#2
+  geom_errorbar(aes(ymax = mean+se, ymin=mean-se),width=.15,size=.4)+#.5
+  guides(col = guide_legend(ncol = 1))
+
+
 
 #I'm not sure why the high density plots have more false positives. there were 5 bacterialtaxa that seemed not to have been randomized but it was mainly eukaroytes that made up the networks and there weren't any euks that didn't get ranodmized . Plus, the high density data have fwere species going into the networks, and they have higher diversity so more species to mess up any negative correlations du to relative nature of the data. Possibly has to do with different structure of the environment??
 
