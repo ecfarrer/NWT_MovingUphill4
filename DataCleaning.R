@@ -784,13 +784,9 @@ labelsBac[ind]<-"Chemoautotrophic_Verrucomicrobia"
 ind<-which(tax_table(datBacS5)[,"Rank2"]=="p__Verrucomicrobia"&tax_table(datBacS5)[,"Rank3"]%in%c("c__[Spartobacteria]","c__Opitutae","c__[Pedosphaerae]","c__Verrucomicrobiae"));ind
 labelsBac[ind]<-"Heterotrophic_Verrucomicrobia"
 
-#Acidobacteria - all but the c__[Chloracidobacteria] are heterotrophs,Chloracidobacteria is photosynthetic
-ind<-which(tax_table(datBacS5)[,"Rank2"]=="p__Acidobacteria"&tax_table(datBacS5)[,"Rank3"]=="c__");ind
-labelsBac[ind]<-"Unknown_Acidobacteria"
-ind<-which(tax_table(datBacS5)[,"Rank3"]=="c__[Chloracidobacteria]");ind
-labelsBac[ind]<-"Photoautotrophic_Acidobacteria"
-ind<-which(tax_table(datBacS5)[,"Rank2"]=="p__Acidobacteria"&tax_table(datBacS5)[,"Rank3"]!="c__[Chloracidobacteria]"&tax_table(datBacS5)[,"Rank3"]!="c__");ind
-labelsBac[ind]<-"Heterotrophic_Acidobacteria"
+#Acidobacteria - all are heterotrophs (the Chloracidobacteria is photoheterotrophic)
+ind<-which(tax_table(datBacS5)[,"Rank2"]=="p__Acidobacteria");ind
+labelsBac[ind]<-"Acidobacteria"
 
 #Elusimicrobia - heterotrophs
 
@@ -895,24 +891,29 @@ ind<-which(tax_table(datBacS5)[,"Rank2"]=="p__[Parvarchaeota]");ind
 labelsBac[ind]<-"Parvarchaeota"
 
 #Bacteroidetes - heterotrophs
-#Chlorobi - many are green sulfur bacteria (photolithoautotrophs), but now it also includes a few photoheterotrophic taxa. i will keep it as unknown
+#Chlorobi - many are green sulfur bacteria (photolithoautotrophs), but now it also includes a few photoheterotrophic taxa. I will keep rank3=chlorobia as PS but all others as unknown
 #FBP - unknown
 #TM6 - many are symbionts (heterotroph),Comparative Genomics of Candidate Phylum TM6 Suggests That Parasitism Is Widespread and Ancestral in This Lineage - go with heterotrophs
 
-ind<-which(tax_table(datBacS5)[,"Rank2"]=="p__TM6");ind
+ind<-which(tax_table(datBacS5)[,"Rank2"]=="p__Chlorobi");ind
+labelsBac[ind]<-"Unknown_Chlorobi"
+ind<-which(tax_table(datBacS5)[,"Rank3"]=="c__Chlorobia");ind
+labelsBac[ind]<-"Photosynthetic_Chlorobi"
 unique(as(tax_table(datBacS5),"matrix")[ind,])  #something weird happened on my work computer and unique() did not work on phyloseq objects
 unique(tax_table(datBacS5)[ind,])
 
 sort(unique(labelsBac))
 colnames(labelsBac)<-"labels"
 
-labelsBac2<-as.data.frame(labelsBac)
+#labelsBac2<-as.data.frame(labelsBac)  #extracting stufff from phyloseq is not working
+labelsBac2<-data.frame(labelsBac@.Data) #when this messes up just close R and reload things
+
 labelsBac2$group<-"Bacteria"
 
 labelsBac2$group2<-NA
-ind<-which(labelsBac2$labels=="Photoautotrophic_Acidobacteria"|labelsBac2$labels=="Cyanobacteria"|labelsBac2$labels=="Photoautotrophic_Chloroflexi") 
+ind<-which(labelsBac2$labels=="Photosynthetic_Chlorobi"|labelsBac2$labels=="Cyanobacteria"|labelsBac2$labels=="Photoautotrophic_Chloroflexi") 
 labelsBac2$group2[ind]<-"PhotosyntheticBacteria"
-ind<-which(labelsBac2$labels%in%c("Heterotrophic_Acidobacteria","Heterotrophic_Actinobacteria","Heterotrophic_Chloroflexi","Heterotrophic_Firmicutes","Heterotrophic_Planctomycetes","Heterotrophic_Proteobacteria","Heterotrophic_Verrucomicrobia","Spirochaetes","Elusimicrobia","Armatimonadetes","Thermi","Gemmatimonadetes","Fibrobacteres","BRC1","WS3","Chlamydiae","OP11","Tenericutes","Euryarchaeota","Bacteroidetes","TM6"))
+ind<-which(labelsBac2$labels%in%c("Acidobacteria","Heterotrophic_Actinobacteria","Heterotrophic_Chloroflexi","Heterotrophic_Firmicutes","Heterotrophic_Planctomycetes","Heterotrophic_Proteobacteria","Heterotrophic_Verrucomicrobia","Spirochaetes","Elusimicrobia","Armatimonadetes","Thermi","Gemmatimonadetes","Fibrobacteres","BRC1","WS3","Chlamydiae","OP11","Tenericutes","Euryarchaeota","Bacteroidetes","TM6"))
 labelsBac2$group2[ind]<-"HeterotrophicBacteria"
 ind<-which(labelsBac2$labels=="Chemoautotrophic_Crenarchaeota"|labelsBac2$labels=="Chemoautotrophic_Firmicutes"|labelsBac2$labels=="Chemoautotrophic_Proteobacteria"|labelsBac2$labels=="Chemoautotrophic_Nitrospirae"|labelsBac2$labels=="Chemoautotrophic_Verrucomicrobia") 
 labelsBac2$group2[ind]<-"ChemoautotrophicBacteria"

@@ -5,13 +5,13 @@ datEukS5k2
 datEukN5k2
 
 #change two colnames, they can't have a dash in it
-colnames(datBacS5k2)[86]<-"WPS.2"
-colnames(datBacS5k2)[37]<-"BHI80.139"
-names(which(colSums(datBacS5k2[,34:89])>2))
+colnames(datBacS5k2)[85]<-"WPS.2"
+colnames(datBacS5k2)[38]<-"BHI80.139"
+names(which(colSums(datBacS5k2[,34:88])>2))
 relBac<-datBacS5k2 %>% 
-  dplyr::select(Sample_name,Bacteroidetes,Cyanobacteria,Gemmatimonadetes,Heterotrophic_Acidobacteria,Heterotrophic_Actinobacteria,Heterotrophic_Chloroflexi,Heterotrophic_Planctomycetes,Heterotrophic_Proteobacteria,Heterotrophic_Verrucomicrobia,Photosynthetic_Acidobacteria) %>% #,WPS.2 is unknown function so I'm taking it out
-  gather(Taxa,abun,Bacteroidetes:Photosynthetic_Acidobacteria) %>%
-  mutate(Taxa = recode_factor(Taxa, Photosynthetic_Acidobacteria="Acidobacteria (P)",Bacteroidetes = "Bacteroidetes (H)",Cyanobacteria="Cyanobacteria (P)",Gemmatimonadetes="Gemmatimonadetes (H)",Heterotrophic_Acidobacteria="Acidobacteria (H)",Heterotrophic_Actinobacteria="Actinobacteria (H)",Heterotrophic_Chloroflexi="Chloroflexi (H)",Heterotrophic_Planctomycetes="Planctomycetes (H)",Heterotrophic_Proteobacteria="Proteobacteria (H)",Heterotrophic_Verrucomicrobia="Verrucomicrobia (H)"))%>%
+  dplyr::select(Sample_name,Acidobacteria,Bacteroidetes,Cyanobacteria,Gemmatimonadetes,Heterotrophic_Actinobacteria,Heterotrophic_Chloroflexi,Heterotrophic_Planctomycetes,Heterotrophic_Proteobacteria,Heterotrophic_Verrucomicrobia) %>% #,WPS.2 is unknown function so I'm taking it out
+  gather(Taxa,abun,Acidobacteria:Heterotrophic_Verrucomicrobia) %>%
+  mutate(Taxa = recode_factor(Taxa, Acidobacteria="Acidobacteria (H)",Bacteroidetes = "Bacteroidetes (H)",Cyanobacteria="Cyanobacteria (P)",Gemmatimonadetes="Gemmatimonadetes (H)",Heterotrophic_Actinobacteria="Actinobacteria (H)",Heterotrophic_Chloroflexi="Chloroflexi (H)",Heterotrophic_Planctomycetes="Planctomycetes (H)",Heterotrophic_Proteobacteria="Proteobacteria (H)",Heterotrophic_Verrucomicrobia="Verrucomicrobia (H)"))%>%
   mutate(type="A. Bacteria")
 
 names(which(colSums(datITSS5k2[,34:47])>.75))
@@ -58,9 +58,9 @@ plotdata$Taxa<-factor(plotdata$Taxa,levels=unique(plotdata$Taxa))
 as.data.frame(plotdata)
 plotdata$lomehi<-factor(plotdata$lomehi,levels=c("lo","me","hi"))
 
-#10 bacteria, 4 fungi, 7 small euks, 4 large euks
+#9 bacteria, 4 fungi, 7 small euks, 4 large euks
 mycols<-c("#D9A125",#yellow
-          "#4BC366",#light green
+          #"#4BC366",#light green
           "#6F94DE",#light blue
           "#B4405E",#red
           "#D185E0",#light purple
@@ -143,6 +143,23 @@ anovaoutput[order(anovaoutput$Taxa),]
 
 
 
+
+
+
+
+##### looking at patterns of rarer groups #####
+relBacsub<-datBacS5k2 %>% 
+  dplyr::select(Sample_name,AD3:WS5)%>%
+  gather(Taxa,abun,AD3:WS5) 
+relBacsub2<-merge(relBacsub,biogeo6,"Sample_name")
+head(relBacsub2)
+plotdatasub<-relBacsub2 %>%
+  group_by(Taxa,lomehi) %>%
+  summarise(mean_abun = mean(abun),se_abun=std.error(abun)) 
+plotdatasub$Taxa<-factor(plotdatasub$Taxa,levels=unique(plotdatasub$Taxa))
+plotdatasub$lomehi<-factor(plotdatasub$lomehi,levels=c("lo","me","hi"))
+
+data.frame(plotdatasub)
 
 
 
