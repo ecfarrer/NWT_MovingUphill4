@@ -400,6 +400,90 @@ datITSS4<-datITSS3%>%
 
 
 
+##### Make rarefaction curves #####
+#need to load or create biogeo6, then reduce the datasets from 90 samples to 75
+datEukS4rarefaction<-datEukS4%>%
+  subset_samples(X.SampleID%in%biogeo6$X.SampleID)%>%
+  filter_taxa(function(x) sum(x) > (0), prune=T)
+sample_data(datEukS4rarefaction)$Successional_stage<-biogeo6$lomehi
+sample_data(datEukS4rarefaction)$Successional_stage<-recode(sample_data(datEukS4rarefaction)$Successional_stage,"lo"="Early","me"="Mid","hi"="Late")
+sample_data(datEukS4rarefaction)$Successional_stage<-factor(sample_data(datEukS4rarefaction)$Successional_stage,levels=c("Early","Mid","Late"))
+
+plotS<-ggrare(datEukS4rarefaction, step = 100, color = "Successional_stage",  se = FALSE)
+
+pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/rarefactionS.pdf",width=6,height=4) 
+plotS+facet_wrap(~Successional_stage)+theme(legend.position = "none")
+dev.off()
+
+datEukNS4rarefaction<-datEukN4%>%
+  subset_samples(Sample_name%in%biogeo6$Sample_name)%>%
+  filter_taxa(function(x) sum(x) > (0), prune=T)
+sample_data(datEukNS4rarefaction)$Successional_stage<-biogeo6$lomehi
+sample_data(datEukNS4rarefaction)$Successional_stage<-recode(sample_data(datEukNS4rarefaction)$Successional_stage,"lo"="Early","me"="Mid","hi"="Late")
+sample_data(datEukNS4rarefaction)$Successional_stage<-factor(sample_data(datEukNS4rarefaction)$Successional_stage,levels=c("Early","Mid","Late"))
+
+plotN<-ggrare(datEukNS4rarefaction, step = 100, color = "Successional_stage",  se = FALSE)
+
+pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/rarefactionN.pdf",width=6,height=4) 
+plotN+facet_wrap(~Successional_stage)+theme(legend.position = "none")
+dev.off()
+
+
+datBacS4rarefaction<-datBacS4%>%
+  subset_samples(Sample_name%in%biogeo6$Sample_name)%>%
+  filter_taxa(function(x) sum(x) > (0), prune=T)
+sample_data(datBacS4rarefaction)$Successional_stage<-biogeo6$lomehi
+sample_data(datBacS4rarefaction)$Successional_stage<-recode(sample_data(datBacS4rarefaction)$Successional_stage,"lo"="Early","me"="Mid","hi"="Late")
+sample_data(datBacS4rarefaction)$Successional_stage<-factor(sample_data(datBacS4rarefaction)$Successional_stage,levels=c("Early","Mid","Late"))
+
+plotB<-ggrare(datBacS4rarefaction, step = 100, color = "Successional_stage",  se = FALSE)
+
+pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/rarefactionB.pdf",width=6,height=4) 
+plotB+facet_wrap(~Successional_stage)+theme(legend.position = "none")
+dev.off()
+
+
+datITSS4rarefaction<-datITSS4%>%
+  subset_samples(Sample_name%in%biogeo6$Sample_name)%>%
+  filter_taxa(function(x) sum(x) > (0), prune=T)
+sample_data(datITSS4rarefaction)$Successional_stage<-biogeo6$lomehi
+sample_data(datITSS4rarefaction)$Successional_stage<-recode(sample_data(datITSS4rarefaction)$Successional_stage,"lo"="Early","me"="Mid","hi"="Late")
+sample_data(datITSS4rarefaction)$Successional_stage<-factor(sample_data(datITSS4rarefaction)$Successional_stage,levels=c("Early","Mid","Late"))
+
+plotF<-ggrare(datITSS4rarefaction, step = 100, color = "Successional_stage",  se = FALSE)
+
+pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/rarefactionF.pdf",width=6,height=4) 
+plotF+facet_wrap(~Successional_stage)+theme(legend.position = "none")
+dev.off()
+
+
+#To average across all sample rarefactions, not used in ms and only done for ITS
+pITS<-ggrare(datITSS4rarefaction, step = 20, color = "Successional_stage", se = FALSE, plot=T)
+pITS2<-pITS$data[,2:4]
+pITS3<-merge(pITS2,biogeo6[,c("X.SampleID","lomehi")])%>%  
+  group_by(lomehi,Size)%>%
+  summarise(mean=mean(.S),se=std.error(.S))%>%
+  filter(Size<1023)
+pITS3$Successional_stage<-factor(pITS3$lomehi)
+pITS3$Successional_stage<-recode(pITS3$Successional_stage,"lo"="Early","me"="Mid","hi"="Late")
+pITS3$Successional_stage<-factor(pITS3$Successional_stage,levels=c("Early","Mid","Late"))
+
+ggplot(pITS3,aes(x=Size,y=mean,group=Successional_stage,color=Successional_stage))+
+  labs(x = "",y="Richness")+
+  theme_classic()+
+  theme(line=element_line(size=.3),text=element_text(size=10),strip.background = element_rect(colour="white", fill="white"),axis.line=element_line(color="gray30",size=.3),legend.key.size = unit(.6, "line"))+
+  geom_line(stat = "identity", position = "identity",size=.4)+#.5
+  #geom_point(size=1.5)+#2
+  #geom_errorbar(aes(ymax = mean+se, ymin=mean-se),width=.15,size=.4)+#.5
+  #scale_color_manual(values=mycols) +
+  #facet_wrap(~lomehi,nrow=3,scales="free")+
+  guides(col = guide_legend(ncol = 1))+
+  xlim(0, 1023)+
+  geom_ribbon(aes_string(ymin = "mean-se", ymax = "mean+se",fill="Successional_stage",color=NULL), alpha = 0.2)
+
+
+
+
 ##### Rarefy and transform to relative abundance #####
 min(sample_sums(datEukS4))#rarefy to 871 
 min(sample_sums(datEukN4))#rarefy to 700

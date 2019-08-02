@@ -19,7 +19,7 @@ http://btibert3.github.io/2015/12/08/Environment-Variables-in-Rstudio-on-Mac.htm
 
 #enviroments:
 MovingUphill4_WorkspaceITSBactTrials.Rdata #dada2 trials in R when I was testing truncation and trimming for ITS and bacteria
-MovingUphill4_Workspace3ITSbioinformatics.Rdata
+MovingUphill4_WorkspaceITSbioinformatics.Rdata
 MovingUphill4_WorkspaceDataCleaning.Rdata
 MovingUphill4_WorkspaceDataCleaningOutput.Rdata #just the 15 output files I need for downstream analysis, all intermediate files deleted from env
 MovingUphill4_WorkspaceAnalysisNetworkTrials.Rdata #all the different trials I ran when deciding the parameters for the networks
@@ -32,7 +32,7 @@ MovingUphill4_WorkspaceAnalysis2.Rdata #reduced network analysis, only final mod
 
 save.image("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis1.Rdata")  # 
 
-load("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceAnalysis1.Rdata") 
+load("~/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/MovingUphill4_WorkspaceDataCleaning.Rdata") 
 
 
 #rm(list=setdiff(ls(), c("fit.lolv4occ9exp4","rescor.lolv4occ9exp4")))
@@ -95,6 +95,11 @@ library(ggplot2)
 library(grid) #for unit function in ggplot2 for legend 
 
 library(vegan)
+
+#for rarefaction curves
+#install.packages("remotes")
+#remotes::install_github("gauravsk/ranacapa")
+library(ranacapa)
 
 #for network stats
 library(NetIndices)
