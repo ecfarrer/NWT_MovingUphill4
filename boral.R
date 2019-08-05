@@ -534,36 +534,58 @@ rescor.hi9$trace
 
 
 #### Percent variation explained by environment ####
-#I don't konw how useful this is (b/c it is not R2 just partitioning the explained variation) - the results suggest that the vast majority of the variance is explained by the latent variables compared to the environment.  
-varparthi<-calc.varpart(mod.mef9lv4)#,groupX=c(1,2,3,4,5)
+#I don't know how useful this is (b/c it is not R2 just partitioning the explained variation) - the results suggest that the vast majority of the variance is explained by the latent variables compared to the environment.  
+varparthi<-calc.varpart(mod.hi11flv3)#,groupX=c(1,2,3,4,5)
 varparthi$varpart.X[1:10]
 varparthi$varpart.lv[1:10]
 hist(varparthi$varpart.X)
 mean(varparthi$varpart.X)
+mean(varparthi$varpart.lv)
 
-varparthi2<-calc.varpart(mod.hi9)
-varparthi2$varpart.X[1:10]
-varparthi2$varpart.lv[1:10]
+varpartme<-calc.varpart(mod.me11flv3)#,groupX=c(1,2,3,4,5)
+varpartme$varpart.X[1:10]
+varpartme$varpart.lv[1:10]
+hist(varpartme$varpart.X)
+mean(varpartme$varpart.X)
+mean(varpartme$varpart.lv)
 
-hist(varparthi2$varpart.X)
-mean(varparthi2$varpart.X)
+varpartlo<-calc.varpart(mod.lo11flv3)#,groupX=c(1,2,3,4,5)
+varpartlo$varpart.X[1:10]
+varpartlo$varpart.lv[1:10]
+hist(varpartlo$varpart.X)
+mean(varpartlo$varpart.X)
+mean(varpartlo$varpart.lv)
+
+
 
 #The above varpart is the contribution of fixed vs latent variables to explained variation, it is not an R2.
 #I want to also try to fit some simple linear models to see how much environment matters to some of the species.
 hmscXhi2
 hmscYhi4
 
-temp<-vector(length=396)
-for (i in 1:396){
+temp<-vector(length=273)
+for (i in 1:273){
   mhi<-lm(hmscYhi4[,i]~hmscXhi2)
-  temp[i]<-summary(mhi)$adj.r.squared
+  temp[i]<-summary(mhi)$r.squared#adj.r.squared
 }
 mean(temp)
+hist(temp)
 
-mhi<-lm(hmscYhi4[,7]~hmscXhi2)
-summary(mhi)
-hist(resid(mhi))
+temp<-vector(length=301)
+for (i in 1:301){
+  mhi<-lm(hmscYme4[,i]~hmscXme2)
+  temp[i]<-summary(mhi)$r.squared#adj.r.squared
+}
+mean(temp)
+hist(temp)
 
+temp<-vector(length=306)
+for (i in 1:306){
+  mhi<-lm(hmscYlo4[,i]~hmscXlo2)
+  temp[i]<-summary(mhi)$r.squared#adj.r.squared
+}
+mean(temp)
+hist(temp)
 
 
 
@@ -847,6 +869,47 @@ temp<-colorgraphhi; temp$ones<-1
 aggregate.data.frame(temp$ones,by=list(temp$group2),sum)
 
 
+#modularity
+modularity(graphlo2, membership(cluster_edge_betweenness(graphlo2)))
+modularity(graphme2, membership(cluster_edge_betweenness(graphme2)))
+modularity(graphhi2, membership(cluster_edge_betweenness(graphhi2)))
+
+unique(membership(walktrap.community(graphlo2)))
+unique(membership(walktrap.community(graphme2)))
+unique(membership(walktrap.community(graphhi2)))
+
+unique(membership(cluster_edge_betweenness(graphlo2))) 
+unique(membership(cluster_edge_betweenness(graphme2)))
+unique(membership(cluster_edge_betweenness(graphhi2)))
+
+
+
+
+#### Hubs ####
+statslo<-data.frame(otu=row.names((as.matrix(degree(graphlo2,normalized=T)))),degree=(as.matrix(degree(graphlo2,normalized=F))),norm_degree=(as.matrix(degree(graphlo2,normalized=TRUE))),closeness=(as.matrix(closeness(graphlo2,normalized=TRUE))),betweenness=(as.matrix(betweenness(graphlo2,normalized=TRUE))))
+statslo[1:5,1:5]
+statslo2<-statslo[order(statslo$degree,decreasing=T),]
+statslo2[1:5,1:3]
+print(statslo2, row.names = F)
+colorgraphlo[which(colorgraphlo$otu%in%statslo2[1:10,1]),]
+#the second most connected organism is a photosynthetic Chloroflexi (84 connections)
+#the seventh most connected organism is ktedonobacteria (73 connections)
+
+statsme<-data.frame(otu=row.names((as.matrix(degree(graphme2,normalized=T)))),degree=(as.matrix(degree(graphme2,normalized=F))),norm_degree=(as.matrix(degree(graphme2,normalized=TRUE))),closeness=(as.matrix(closeness(graphme2,normalized=TRUE))),betweenness=(as.matrix(betweenness(graphme2,normalized=TRUE))))
+statsme[1:5,1:5]
+statsme2<-statsme[order(statsme$degree,decreasing=T),]
+statsme2[1:5,1:2]
+print(statsme2, row.names = F)
+colorgraphme[which(colorgraphme$otu%in%statsme2[1:10,1]),]
+
+statshi<-data.frame(otu=row.names((as.matrix(degree(graphhi2,normalized=T)))),degree=(as.matrix(degree(graphhi2,normalized=F))),norm_degree=(as.matrix(degree(graphhi2,normalized=TRUE))),closeness=(as.matrix(closeness(graphhi2,normalized=TRUE))),betweenness=(as.matrix(betweenness(graphhi2,normalized=TRUE))))
+statshi[1:5,1:5]
+statshi2<-statshi[order(statshi$degree,decreasing=T),]
+statshi2[1:5,1:2]
+print(statshi2, row.names = F)
+colorgraphhi[which(colorgraphhi$otu%in%statshi2[4,1]),]
+#the fourth most connected is chemoautotrophic
+
 
 
 ##### Photosynthetic microbes #####
@@ -1042,7 +1105,7 @@ colorgraphhi[ind,]
 #lo
 
 Ciliophora - 4 taxa
-S7a97813269020725286a63989363ceef Litostomatea (class). when I blastd this, the closest identified hit was Foissnerides in the haptoria (subclass), Haptorida (an order of ciliate predators) but only 90% identity. The only other thing it could be in the litostomatea is from the group that consists of endosymbionts in th digestive tract of vertebrates which is it not probably, so otherwise it is a predator
+S7a97813269020725286a63989363ceef Litostomatea (class). when I blasted this, the closest identified hit was Foissnerides in the haptoria (subclass), Haptorida (an order of ciliate predators) but only 90% identity. The only other thing it could be in the litostomatea is from the group that consists of endosymbionts in th digestive tract of vertebrates which is it not probably, so otherwise it is a predator
 S13a0576d1656e575cdc2dc94fd138719 Litostomatea/Isotricha (genus) uncultured_rumen_protozoa
   when I blasted this it came back as 100% idenity to Enchelyodon sp (haptorida). which is a freeliving ciliate predator (https://www.nies.go.jp/chiiki1/protoz/morpho/ciliopho/enchelyo.htm)
 Sec88fea6bf21bef8baba7173b475de7d Scuticociliatia, Scuticociliates often feed on bacteria (subclass). "Scuticociliates often feed on bacteria, using complex morphological adaptations to create currents
@@ -1097,6 +1160,30 @@ grep -C 2 "2d66d59115e5f8c6d716f72f4fc26f23" dna-sequences.fasta
 
 
 
+
+##### interactions with unknown organisms ######
+temp<-colorgraphlo[which(colorgraphlo$group2=="UnknownEukaryota"|colorgraphlo$group2=="UnknownBacteria"),"otu"]
+length(temp)
+outputUsinteractionlo<-myedgelistlo[which(myedgelistlo$X1%in%temp|myedgelistlo$X2%in%temp),]
+head(outputUsinteractionlo)
+dim(outputUsinteractionlo)
+1161/2829
+
+temp<-colorgraphme[which(colorgraphme$group2=="UnknownEukaryota"|colorgraphme$group2=="UnknownBacteria"),"otu"]
+length(temp)
+outputUsinteractionme<-myedgelistme[which(myedgelistme$X1%in%temp|myedgelistme$X2%in%temp),]
+head(outputUsinteractionme)
+dim(outputUsinteractionme)
+659/2037
+
+temp<-colorgraphhi[which(colorgraphhi$group2=="UnknownEukaryota"|colorgraphhi$group2=="UnknownBacteria"),"otu"]
+length(temp)
+outputUsinteractionhi<-myedgelisthi[which(myedgelisthi$X1%in%temp|myedgelisthi$X2%in%temp),]
+head(outputUsinteractionhi)
+dim(outputUsinteractionhi)
+183/594
+
+(1161+659+183)/(2829+2037+594)
 
 
 

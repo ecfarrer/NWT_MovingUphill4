@@ -1127,8 +1127,20 @@ datITSS5k2<-cbind(sample_data(datITSS5),t(datITSS5k))
 head(datITSS5k2)
   
   
-  
-  
+##### Getting relative abundance of Ktedonobacteria ####  
+ind<-which(tax_table(datBacS5)[,"Rank3"]=="c__Ktedonobacteria");ind
+#sort(unique(tax_table(datBacS5)[,"Rank4"]))
+datBacS5ktedono<-tax_glom(datBacS5,taxrank="Rank3")
+datBacS5ktedonootu<-cbind(sample_data(datBacS5ktedono),t(otu_table(datBacS5ktedono)))
+datBacS5ktedonootu$Sample_name<-as.numeric(as.character(datBacS5ktedonootu$Sample_name))
+#fbb64021239cd7f53dcf28e48ed0fbc8 is ktedonobacteria
+
+datBacS5ktedonootu$fbb64021239cd7f53dcf28e48ed0fbc8
+datBacS5ktedonootu2<-merge(datBacS5ktedonootu[,c(1,34:173)],biogeo6,"X.SampleID")
+aggregate.data.frame(datBacS5ktedonootu2$fbb64021239cd7f53dcf28e48ed0fbc8,by=list(datBacS5ktedonootu2$lomehi),mean)
+anova(lm(datBacS5ktedonootu2$fbb64021239cd7f53dcf28e48ed0fbc8~datBacS5ktedonootu2$lomehi))
+#their abundance doesn't change over succession
+
 
 
 ###### Filter data sets for network analysis ######
