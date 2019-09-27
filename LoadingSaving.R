@@ -79,6 +79,10 @@ library(decontam)
 #library(devtools)
 #install_github('guiblanchet/HMSC') #takes a long time, 30 min?
 
+#for krona plots
+#BiocManager::install("cpauvert/psadd")
+library(psadd)
+
 library(HMSC)
 
 library(vegan)

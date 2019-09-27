@@ -70,7 +70,7 @@ datEukS<-datEuk%>%
   subset_taxa(is.na(Rank3)==T|Rank3!="__Metazoa")%>%
   subset_taxa(is.na(Rank7)==T|Rank7!="__Embryophyta")%>%
   #subset_samples(Sample_name!=126&Sample_name!=5&Sample_name!=34)%>% none are super low
-  filter_taxa(function(x) sum(x) > (1), prune=T) #there are no singletons
+  filter_taxa(function(x) sum(x) > (0), prune=T) #there are no singletons
 
 unique(tax_table(datEukS)[,"Rank3"])
 
@@ -241,7 +241,7 @@ datBacS<-datBac%>%
   subset_taxa(Rank1=="k__Archaea"|Rank1=="k__Bacteria")%>%
   subset_taxa(is.na(Rank3)==T|Rank3!="c__Chloroplast")%>%
   subset_taxa(is.na(Rank5)==T|Rank5!="f__mitochondria")%>%
-  filter_taxa(function(x) sum(x) > (1), prune=T) #there are no singletons, but this prunes off taxa that are 0
+  filter_taxa(function(x) sum(x) > (0), prune=T) #there are no singletons, but this prunes off taxa that are 0
 
 unique(tax_table(datBac)[,"Rank3"])
 
@@ -455,6 +455,26 @@ plotF<-ggrare(datITSS4rarefaction, step = 100, color = "Successional_stage",  se
 pdf("/Users/farrer/Dropbox/EmilyComputerBackup/Documents/Niwot_King/FiguresStats/kingdata/Figs/FigsforMolEcolSubmission/rarefactionF.pdf",width=6,height=4) 
 plotF+facet_wrap(~Successional_stage)+theme(legend.position = "none")
 dev.off()
+
+
+#Investigating doubletons:
+#Bact
+datBacS4rarefaction%>%
+  filter_taxa(function(x) sum(x) == 2, prune=T)%>%
+  subset_samples(Successional_stage=="Late")%>%
+  filter_taxa(function(x) sum(x) >0, prune=T)
+datEukS4rarefaction%>%
+  filter_taxa(function(x) sum(x) == 2, prune=T)%>%
+  subset_samples(Successional_stage=="Late")%>%
+  filter_taxa(function(x) sum(x) >0, prune=T)
+datEukNS4rarefaction%>%
+  filter_taxa(function(x) sum(x) == 2, prune=T)%>%
+  subset_samples(Successional_stage=="Late")%>%
+  filter_taxa(function(x) sum(x) >0, prune=T)
+datITSS4rarefaction%>%
+  filter_taxa(function(x) sum(x) == 2, prune=T)%>%
+  subset_samples(Successional_stage=="Late")%>%
+  filter_taxa(function(x) sum(x) >0, prune=T)
 
 
 #To average across all sample rarefactions, not used in ms and only done for ITS
